@@ -29,16 +29,15 @@ questions:
   default: '3'
   group: Kafka
   targets:
-    - deploy_kafka.deployment.values.replicas
+    - deploy_kafka.deployment.values.brokers.replicas
 - type: pipeline
-  dataType: boolean
-  label: "Monitoring"
-  required: true
-  group: Monitoring
-  key: monitoring
-  default: true
+  dataType: string
+  label: 'Persistent Volume size'
+  pattern: ^\d+(E|P|T|G|M|K|Ei|Pi|Ti|Gi|Mi|Ki)?$
+  default: '10Gi'
+  group: Kafka
   targets:
-    - deploy_kafka.deployment.values.monitoring.enabled
+    - deploy_kafka.deployment.values.brokers.disk.size
 - type: pipeline
   dataType: string
   label: 'Number of Zookeeper nodes'

@@ -1,20 +1,9 @@
-statefulset:
-  labels: {}
+brokers:
   disk:
     size: 10Gi
   replicas: 3
-  port: 9092
-
-monitoring:
-  enabled: true
-  jmx:
-    port: 5555
-  annotations:
-    prometheus.io/scrape: "true"
-    prometheus.io/probe: kafka
-    prometheus.io/port: "9020"
+  config:
 
 image:
   repository: wurstmeister/kafka
   tag: 2.12-2.1.0
-  pullPolicy: IfNotPresent
