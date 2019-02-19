@@ -1,0 +1,107 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kafka
+  labels:
+    app: {{ template "kafka.name" . }}
+    chart: {{ template "kafka.chart" . }}
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  selector:
+    matchLabels:
+      app: {{ template "kafka.name" . }}
+      chart: {{ template "kafka.chart" . }}
+      release: "{{ .Release.Name }}"
+      heritage: "{{ .Release.Service }}"
+  serviceName: "kafka-dns"
+  replicas: {{.Values.statefulset.replicas}}
+  updateStrategy:
+    type: OnDelete
+  template:
+    metadata:
+{{- if .Values.monitoring.annotations }}
+      annotations:
+{{ toYaml .Values.monitoring.annotations | indent 8 }}
+{{- end }}
+      labels:
+        app: {{ template "kafka.name" . }}
+        chart: {{ template "kafka.chart" . }}
+        release: "{{ .Release.Name }}"
+        heritage: "{{ .Release.Service }}"
+  {{- if .Values.statefulset.labels }}
+{{ toYaml .Values.statefulset.labels | indent 8 }}
+{{- end }}
+    spec:
+      initContainers:
+      - name: jmx-export
+        image: banzaicloud/jmx_exporter:latest
+        command: ['cp', '/usr/share/jmx_exporter/jmx_prometheus_javaagent-0.3.1-SNAPSHOT.jar', '/opt/jmx-exporter/']
+        volumeMounts:
+        - name: jmx-jar-data
+          mountPath: /opt/jmx-exporter/
+{{- end }}
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: broker
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}    
+        env:
+        - name: KAFKA_LOG4J_OPTS
+          value: -Dlog4j.configuration=file:config/log4j.properties
+{{- if .Values.monitoring.enabled }}
+        - name: JMX_PORT
+          value: "{{ .Values.monitoring.jmx.port }}"
+        - name: KAFKA_JMX_OPTS
+          value: "-Djava.net.preferIPv4Stack=true -Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.rmi.port={{ .Values.monitoring.jmx.port }} -Djava.rmi.server.hostname=127.0.0.1"
+        - name: KAFKA_OPTS
+          value: "-javaagent:/opt/jmx-exporter/jmx_prometheus_javaagent-0.3.1-SNAPSHOT.jar={{ index .Values.monitoring.annotations "prometheus.io/port" }}:/etc/jmx-exporter/config.yaml"
+{{- end }}
+        ports:
+        - name: kafka
+          containerPort: {{ .Values.statefulset.port }}
+{{- if .Values.monitoring.enabled }}
+        - name: prometheus
+          containerPort: {{ index .Values.monitoring.annotations "prometheus.io/port" }}
+        - name: jmx
+          containerPort: {{ .Values.monitoring.jmx.port }}
+{{- end }}
+        command:
+        - sh
+        - -c
+        - "./bin/kafka-server-start.sh config/server.properties --override zookeeper.connect=zookeeper-cluster-client:2181 --override log.retention.hours=168 --override log.dirs=/var/lib/kafka/data/topics --override broker.id=${HOSTNAME##*-}"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 512Mi
+        readinessProbe:
+          tcpSocket:
+            port: {{ .Values.statefulset.port }}
+          timeoutSeconds: 1
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/kafka/data
+{{- if .Values.monitoring.enabled }}
+        - name: jmx-jar-data
+          mountPath: /opt/jmx-exporter/
+          readOnly: true
+        - name: jmx-config
+          mountPath: /etc/jmx-exporter/
+          readOnly: true
+{{- end }}
+      volumes:
+      - name: jmx-jar-data
+        emptyDir: {}
+{{- if .Values.monitoring.enabled }}
+      - name: jmx-config
+        configMap:
+          name: "{{ template "kafka.fullname" . }}-jmx-exporter"
+{{- end }}
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: "{{.Values.statefulset.disk.size}}"

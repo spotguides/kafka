@@ -1,0 +1,48 @@
+name: 'Kafka Spotguide'
+description: 'Production grade Kafka on Kubernets'
+tags: ['Kafka', 'Big Data', 'Zookeeper', 'Queue']
+resources:
+  sumCpu: 8
+  sumMem: 12
+  filters: []
+  sameSize: false
+  onDemandPct: 30
+  minNodes: 3
+  maxNodes: 4
+questions:
+- type: pipeline
+  dataType: enum
+  key: kafka_version_enum
+  label: 'Kafka Version'
+  description: ''
+  default: '2.12-2.1.0'
+  required: true
+  group: Kafka
+  options:
+  - '2.12-2.1.0'
+  - '2.11.1.1.1'
+  targets:
+    - deploy_kafka.deployment.values.image.tag
+- type: pipeline
+  dataType: string
+  label: 'Number of Kafka brokers'
+  default: '3'
+  group: Kafka
+  targets:
+    - deploy_kafka.deployment.values.replicas
+- type: pipeline
+  dataType: boolean
+  label: "Monitoring"
+  required: true
+  group: Monitoring
+  key: monitoring
+  default: true
+  targets:
+    - deploy_kafka.deployment.values.monitoring.enabled
+- type: pipeline
+  dataType: string
+  label: 'Number of Zookeeper nodes'
+  default: '3'
+  group: Zookeeper
+  targets:
+    - deploy_zookeeper.deployment.values.cluster.size
