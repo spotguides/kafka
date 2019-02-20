@@ -15,9 +15,9 @@ rules:
   verbs:
   - "*"
 - apiGroups:
-  - zookeeper.pravega.io/v1beta1
+  - zookeeper.pravega.io
   resources:
-  - ZookeeperCluster
+  - zookeeperclusters
   verbs:
   - "*"
 ---
@@ -38,3 +38,14 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: {{ template "zookeeper.fullname" . }}
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ template "zookeeper.fullname" . }}
+  labels:
+    app: "{{ template "zookeeper.fullname" . }}"
+    chart: "{{ include "zookeeper.chart" . }}"
+    heritage: "{{ .Release.Service }}"
+    release: "{{ .Release.Name }}"

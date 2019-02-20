@@ -46,7 +46,7 @@ questions:
   label: 'Broker properties'
   required: false
   default: |
-    zookeeper.connect=example-zookeepercluster-client.zookeeper:2181
+    zookeeper.connect=zookeeper-cluster-client.zookeeper:2181
     default.replication.factor=3
     num.partitions=3
   targets:

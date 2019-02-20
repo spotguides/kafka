@@ -30,6 +30,7 @@ spec:
         release: "{{ .Release.Name }}"
         heritage: "{{ .Release.Service }}"
     spec:
+      serviceAccountName: {{ template "kafka-operator.name" . }}
       containers:
       - args:
         - --secure-listen-address=0.0.0.0:8443

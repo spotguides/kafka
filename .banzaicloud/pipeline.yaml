@@ -10,7 +10,7 @@ pipeline:
     image: banzaicloud/ci-pipeline-client:0.10
     action: EnsureDeployment
     deployment:
-      name: './zookeeper-1.0.0.tgz'
+      name: './zookeeper-0.0.1.tgz'
       releaseName: '{{ .CICD_REPO_NAME }}-zk'
       namespace: zookeeper
   
@@ -24,7 +24,7 @@ pipeline:
     image: banzaicloud/ci-pipeline-client:0.10
     action: EnsureDeployment
     deployment:
-      name: './kafka-operator-1.0.0.tgz'
+      name: './kafka-operator-0.1.0.tgz'
       releaseName: '{{ .CICD_REPO_NAME }}-kafka-operator'
       namespace: kafka
 
