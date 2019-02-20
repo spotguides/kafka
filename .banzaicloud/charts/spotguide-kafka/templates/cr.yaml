@@ -15,7 +15,7 @@ spec:
   image: "{{.Values.image.repository}}:{{.Values.image.tag}}"
   brokerConfig: |
     log.dirs=/kafka-logs/kafka
-    {{.Values.brokers.config}}
+    {{- .Values.brokers.config | nindent 4}}
   listeners:
     externalListener:
       - type: "plaintext"
