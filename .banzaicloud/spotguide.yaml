@@ -50,7 +50,7 @@ questions:
     default.replication.factor=3
     num.partitions=3
   targets:
-   - deploy_kafka.deployment.values.
+   - deploy_kafka.deployment.values.brokers.config
 - type: pipeline
   dataType: string
   label: 'Number of Zookeeper nodes'
