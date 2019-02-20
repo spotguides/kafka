@@ -1,0 +1,100 @@
+Congratulations, you have deployed Kafka Spotguide to Kubernetes! Your release is named {{ .Release.Name }}.
+
+> Please note that if security scan enabled for your cluster, running kafka for the first time may take longer than usual!
+Please be patient.
+
+To run the below mentioned commands the kubernetes config needs to be set properly. To do that run the following commands:
+
+### Get the Kubernetes config
+Download the cluster config from the cluster details page:
+{{- if .Values.banzaicloud.cluster.id }}
+[Cluster details]({{ $.Values.banzaicloud.organization.name }}/cluster/{{ .Values.banzaicloud.cluster.id }}/details)
+{{- end }}
+
+```
+export KUBECONFIG=<path to the file which contains the fetched config/downloaded before>
+```
+
+{{- if  eq (.Values.banzaicloud.cluster.distribution) "eks" }}
+In case of Amazon EKS a small authenticator program is required to be able to access the cluster. It can be installed using the following command:
+
+Using Go:
+```
+go get -u -v github.com/kubernetes-sigs/aws-iam-authenticator/cmd/aws-iam-authenticator
+```
+
+Using the prebuilt binary:
+
+Follow this documentation on Amazon how to get and install a prebuilt binary:
+https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html
+Search for `To install aws-iam-authenticator for Amazon EKS`.
+
+{{- end }}
+
+Small tool which interacts with your Kubernetes cluster must be installed. Please follow the following page to install it https://kubernetes.io/docs/tasks/tools/install-kubectl/
+
+### Use Kafka outside of Kubernetes
+
+To access Kafka outside of the kubernetes cluster the Loadbalancer address needs to be retrieved:
+
+```
+kubectl get svc -n kafka envoy-loadbalancer
+```
+
+> Look for the `EXTERNAL-IP` and `PORT(S)` column.
+
+For example:
+```
+kubectl get svc -n kafka envoy-loadbalancer
+NAME                 TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)                                           AGE
+envoy-loadbalancer   LoadBalancer   10.19.242.173   kafka-spotguide-example.com   19090:31750/TCP,19091:30452/TCP,19092:32390/TCP   1h
+```
+
+> To save resources Spotguide using only one LoadBalancer to access all brokers. To achieve that all broker receives its own port. So in the example shown above broker-0 will be available on port 19090, broker-1 on port 19091...
+
+To try Kafka out, we recommend to use [Kafkacat](https://github.com/edenhill/kafkacat). To install Kafkacat use the following commands:
+
+#### On Mac
+```
+brew install kafkacat
+```
+
+#### On Ubuntu
+```
+apt-get install kafkacat
+```
+
+#### Fetch Brokers metadata with Kafkacat
+
+```
+kafkacat -b kafka-spotguide-example.com:19090 -L
+```
+
+### Use Kafka inside of Kubernetes
+
+### Monitoring
+
+The monitoring dashboard can be accessed on the following host:
+
+- [Grafana]({{ .Values.banzaicloud.organization.name }}/deployment?cluster={{ .Values.banzaicloud.cluster.name }}&releaseName=monitor)
+- [User secret]({{ $.Values.banzaicloud.organization.name }}/secret?name=cluster-{{ .Values.banzaicloud.cluster.id }}-grafana)
+
+{{- if .Values.banzaicloud.organization.name }}
+
+### CI/CD Pipeline
+
+Every time you make changes to the source code and update the `master` branch, the CI/CD pipeline will be triggered to reconfigure your kafka cluster.
+
+[Go to CI/CD]({{ $.Values.banzaicloud.organization.name }}/cicd/{{ include "repo-name" . }})
+
+{{- end }}
+
+{{- if .Values.banzaicloud.organization.name }}
+
+### Secrets
+
+The following secrets were created as part of the spotguide:
+
+[Go to Secrets]({{ $.Values.banzaicloud.organization.name }}/secret?filter={{ include "repo-tag" . }})
+
+{{- end }}
