@@ -30,3 +30,43 @@ Create chart name and version as used by the chart label.
 {{- define "kafka-spotguide.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
+
+# https://github.com/helm/helm/issues/4535
+{{- define "call-nested" }}
+{{- $dot := index . 0 }}
+{{- $subchart := index . 1 }}
+{{- $template := index . 2 }}
+{{- include $template (dict "Chart" (dict "Name" $subchart) "Values" (index $dot.Values $subchart) "Release" $dot.Release "Capabilities" $dot.Capabilities) }}
+{{- end }}
+
+{{- define "repo-tag" }}
+{{- if .Values.banzaicloud.organization.name }}
+{{- range .Values.banzaicloud.tags }}
+{{- if regexMatch "^repo:" . }}
+{{- . }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{- define "repo-user" }}
+{{- if .Values.banzaicloud.organization.name }}
+{{- range .Values.banzaicloud.tags }}
+{{- if regexMatch "^repo:" . }}
+{{- $repoFullName := regexReplaceAll "^repo:" . "" }}
+{{- first (splitList "/" $repoFullName) }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{- define "repo-name" }}
+{{- if .Values.banzaicloud.organization.name }}
+{{- range .Values.banzaicloud.tags }}
+{{- if regexMatch "^repo:" . }}
+{{- $repoFullName := regexReplaceAll "^repo:" . "" }}
+{{- last (splitList "/" $repoFullName) }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
