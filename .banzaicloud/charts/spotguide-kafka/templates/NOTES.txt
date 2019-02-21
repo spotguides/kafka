@@ -70,14 +70,17 @@ apt-get install kafkacat
 kafkacat -b kafka-spotguide-example.com:19090 -L
 ```
 
+#### Run the sample WordCount Kafka Streams application
+
+
+
 ### Use Kafka inside of Kubernetes
 
 ### Monitoring
 
 The monitoring dashboard can be accessed on the following host:
 
-- [Grafana]({{ .Values.banzaicloud.organization.name }}/deployment?cluster={{ .Values.banzaicloud.cluster.name }}&releaseName=monitor)
-- [User secret]({{ $.Values.banzaicloud.organization.name }}/secret?name=cluster-{{ .Values.banzaicloud.cluster.id }}-grafana)
+- [Grafana]({{ $.Values.banzaicloud.organization.name }}/cluster/{{ .Values.banzaicloud.cluster.id }}/details)
 
 {{- if .Values.banzaicloud.organization.name }}
 
@@ -90,11 +93,3 @@ Every time you make changes to the source code and update the `master` branch, t
 {{- end }}
 
 {{- if .Values.banzaicloud.organization.name }}
-
-### Secrets
-
-The following secrets were created as part of the spotguide:
-
-[Go to Secrets]({{ $.Values.banzaicloud.organization.name }}/secret?filter={{ include "repo-tag" . }})
-
-{{- end }}
