@@ -72,9 +72,51 @@ kafkacat -b kafka-spotguide-example.com:19090 -L
 
 #### Run the sample WordCount Kafka Streams application
 
+Download the following [jar](https://github.com/banzaicloud/kafka-spotguide-example/blob/master/target/kafka-spotguide-example-1.0-SNAPSHOT.jar?raw=true) or
+visit the [example](https://github.com/banzaicloud/kafka-spotguide-example) repository and build the WordCount example.
 
+Produce some message to topic `streams-plaintext-input`, then run the downloaded jar and read the processed values from `streams-wordcount-output`:
+
+> Kafkacat does not [support](https://github.com/edenhill/kafkacat/issues/89) common Kafka Java deserializers so Kafka consumer must be used to view the results created by the Kafka Streaming App.
+```
+kafkacat -P -b <your-bootstrap-server-address-with-port> -t streams-plaintext-input
+
+java -jar kafka-spotguide-example-1.0-SNAPSHOT.jar <your-bootstrap-server-address-with-port>
+
+./kafka-console-consumer.sh --topic streams-wordcount-output --from-beginning --bootstrap-server <your-bootstrap-server-address-with-port> --property print.key=true --property value.deserializer=org.apache.kafka.common.serialization.LongDeserializer
+```
 
 ### Use Kafka inside of Kubernetes
+
+To use Kafka inside the cluster create a Pod which contains `Kafkacat`.
+
+The following command will create a `kafka-test` pod in kafka namespace.
+```
+kubectl create -n kafka -f - <<EOF 
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kafka-test
+spec:
+  containers:
+  - name: kafka-test
+    image: solsson/kafkacat
+    # Just spin & wait forever
+    command: [ "/bin/bash", "-c", "--" ]
+    args: [ "while true; do sleep 3000; done;" ]
+EOF
+```
+Then exec into the container and produce and consume some messages:
+
+```
+kubectl exec -it -n kafka kafka-test bash
+
+# Produce some message
+kafkacat -P -b kafka-headless:29092 -t spotguide-kafka
+
+# Consume it
+kafkacat -C -b kafka-headless:29092 -t spotguide-kafka
+```
 
 ### Monitoring
 
