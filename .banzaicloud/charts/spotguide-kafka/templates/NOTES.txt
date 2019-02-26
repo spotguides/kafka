@@ -1,73 +1,86 @@
-Congratulations, you have deployed Kafka Spotguide to Kubernetes! Your release is named {{ .Release.Name }}.
+Congratulations, you have deployed Kafka Spotguide to Kubernetes!
+Your release is named `{{ .Release.Name }}`.
 
-> Please note that if security scan enabled for your cluster, running kafka for the first time may take longer than usual!
-Please be patient.
+> Please note that if security scan was enabled for your cluster, running kafka for the first time may take longer than usual!
+> Please be patient.
 
-To run the below mentioned commands the kubernetes config needs to be set properly. To do that run the following commands:
+To run the below mentioned commands the Kubernetes config needs to be set properly. To do so, run the following commands:
 
 ### Get the Kubernetes config
+
 Download the cluster config from the cluster details page:
 {{- if .Values.banzaicloud.cluster.id }}
-[Cluster details]({{ $.Values.banzaicloud.organization.name }}/cluster/{{ .Values.banzaicloud.cluster.id }}/details)
+[Cluster details]({{ .Values.banzaicloud.organization.name }}/cluster/{{ .Values.banzaicloud.cluster.id }}/details)
 {{- end }}
 
-```
+```bash
 export KUBECONFIG=<path to the file which contains the fetched config/downloaded before>
 ```
 
-{{- if  eq (.Values.banzaicloud.cluster.distribution) "eks" }}
+{{- if and .Values.banzaicloud.cluster (eq .Values.banzaicloud.cluster.distribution "eks") }}
+
 In case of Amazon EKS a small authenticator program is required to be able to access the cluster. It can be installed using the following command:
 
 Using Go:
-```
+
+```bash
 go get -u -v github.com/kubernetes-sigs/aws-iam-authenticator/cmd/aws-iam-authenticator
 ```
 
 Using the prebuilt binary:
 
-Follow this documentation on Amazon how to get and install a prebuilt binary:
-https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html
-Search for `To install aws-iam-authenticator for Amazon EKS`.
+Follow this documentation on Amazon how to get and install the prebuilt binary: [install aws-iam-authenticator for Amazon EKS](https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html#get-started-kubectl).
 
 {{- end }}
 
-Small tool which interacts with your Kubernetes cluster must be installed. Please follow the following page to install it https://kubernetes.io/docs/tasks/tools/install-kubectl/
+To have access to the Kubernetes cluster, install the Kubernetes command-line tool: [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/).
 
 ### Use Kafka outside of Kubernetes
 
-To access Kafka outside of the kubernetes cluster the Loadbalancer address needs to be retrieved:
+To access Kafka outside of the Kubernetes cluster the `Loadbalancer` address needs to be retrieved:
 
-```
-kubectl get svc -n kafka envoy-loadbalancer
-```
+External IP:
 
-> Look for the `EXTERNAL-IP` and `PORT(S)` column.
+```bash
+export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} -o jsonpath="{.status.loadBalancer.ingress[0].ip}" envoy-loadbalancer)
 
-For example:
-```
-kubectl get svc -n kafka envoy-loadbalancer
-NAME                 TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)                                           AGE
-envoy-loadbalancer   LoadBalancer   10.19.242.173   kafka-spotguide-example.com   19090:31750/TCP,19091:30452/TCP,19092:32390/TCP   1h
+echo $SERVICE_IP
 ```
 
-> To save resources Spotguide using only one LoadBalancer to access all brokers. To achieve that all broker receives its own port. So in the example shown above broker-0 will be available on port 19090, broker-1 on port 19091...
+Ports:
 
-To try Kafka out, we recommend to use [Kafkacat](https://github.com/edenhill/kafkacat). To install Kafkacat use the following commands:
+```bash
+export SERVICE_PORTS=($(kubectl get svc --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[*].port}" envoy-loadbalancer))
 
-#### On Mac
+echo ${SERVICE_PORTS[@]}
+
+# depending on the shell of your choice, arrays may be indexed starting from 0 or 1
+export SERVICE_PORT=${SERVICE_PORTS[@]:0:1}
+
+echo $SERVICE_PORT
 ```
+
+> To save resources Spotguide using only one LoadBalancer to access all brokers. To achieve that all broker receives its own port. For example: broker-0 will be available on port 19090, broker-1 on port 19091...
+
+To try Kafka out, we recommend to use [Kafkacat](https://github.com/edenhill/kafkacat).
+
+__MacOS__:
+
+```bash
 brew install kafkacat
 ```
 
-#### On Ubuntu
-```
+__Ubuntu__:
+
+```bash
+apt-get update
 apt-get install kafkacat
 ```
 
-#### Fetch Brokers metadata with Kafkacat
+Fetch Brokers metadata:
 
-```
-kafkacat -b kafka-spotguide-example.com:19090 -L
+```bash
+kafkacat -b $SERVICE_IP:$SERVICE_PORT -L
 ```
 
 #### Run the sample WordCount Kafka Streams application
@@ -75,25 +88,27 @@ kafkacat -b kafka-spotguide-example.com:19090 -L
 Download the following [jar](https://github.com/banzaicloud/kafka-spotguide-example/blob/master/target/kafka-spotguide-example-1.0-SNAPSHOT.jar?raw=true) or
 visit the [example](https://github.com/banzaicloud/kafka-spotguide-example) repository and build the WordCount example.
 
-Produce some message to topic `streams-plaintext-input`, then run the downloaded jar and read the processed values from `streams-wordcount-output`:
+Produce some message to topic `streams-plaintext-input`, run the downloaded jar and read the processed values from `streams-wordcount-output`:
 
 > Kafkacat does not [support](https://github.com/edenhill/kafkacat/issues/89) common Kafka Java deserializers so Kafka consumer must be used to view the results created by the Kafka Streaming App.
-```
-kafkacat -P -b <your-bootstrap-server-address-with-port> -t streams-plaintext-input
 
-java -jar kafka-spotguide-example-1.0-SNAPSHOT.jar <your-bootstrap-server-address-with-port>
+```bash
+kafkacat -P -b $SERVICE_IP:$SERVICE_PORT -t streams-plaintext-input
 
-./kafka-console-consumer.sh --topic streams-wordcount-output --from-beginning --bootstrap-server <your-bootstrap-server-address-with-port> --property print.key=true --property value.deserializer=org.apache.kafka.common.serialization.LongDeserializer
+java -jar kafka-spotguide-example-1.0-SNAPSHOT.jar $SERVICE_IP:$SERVICE_PORT
+
+./kafka-console-consumer.sh --topic streams-wordcount-output --from-beginning --bootstrap-server $SERVICE_IP:$SERVICE_PORT --property print.key=true --property value.deserializer=org.apache.kafka.common.serialization.LongDeserializer
+
 ```
 
 ### Use Kafka inside of Kubernetes
 
 To use Kafka inside the cluster create a Pod which contains `Kafkacat`.
 
-The following command will create a `kafka-test` pod in kafka namespace.
+The following command will create a `kafka-test` pod in `{{ .Release.Namespace }}` namespace.
 
-```
-kubectl create -n kafka -f - <<EOF 
+```bash
+kubectl create -n {{ .Release.Namespace }} -f - <<EOF
 apiVersion: v1
 kind: Pod
 metadata:
@@ -110,8 +125,8 @@ EOF
 
 Then exec into the container and produce and consume some messages:
 
-```
-kubectl exec -it -n kafka kafka-test bash
+```bash
+kubectl exec -it -n {{ .Release.Namespace }} kafka-test bash
 
 # Produce some message
 kafkacat -P -b kafka-headless:29092 -t spotguide-kafka
@@ -120,18 +135,18 @@ kafkacat -P -b kafka-headless:29092 -t spotguide-kafka
 kafkacat -C -b kafka-headless:29092 -t spotguide-kafka
 ```
 
+{{- if .Values.banzaicloud.organization.name }}
+
 ### Monitoring
 
 The monitoring dashboard can be accessed on the following host:
 
-- [Grafana]({{ $.Values.banzaicloud.organization.name }}/cluster/{{ .Values.banzaicloud.cluster.id }}/details)
-
-{{- if .Values.banzaicloud.organization.name }}
+- [Grafana]({{ .Values.banzaicloud.organization.name }}/cluster/{{ .Values.banzaicloud.cluster.id }}/details)
 
 ### CI/CD Pipeline
 
-Every time you make changes to the source code and update the `master` branch, the CI/CD pipeline will be triggered to reconfigure your kafka cluster.
+Every time you make changes to the source code and update the `master` branch, the CI/CD pipeline will be triggered to reconfigure your Kafka cluster.
 
-[Go to CI/CD]({{ $.Values.banzaicloud.organization.name }}/cicd/{{ include "repo-name" . }})
+- [Go to CI/CD]({{ .Values.banzaicloud.organization.name }}/cicd/{{ include "repo-name" . }})
 
 {{- end }}
