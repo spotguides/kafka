@@ -1,10 +1,10 @@
-Congratulations, you have deployed Kafka Spotguide to Kubernetes!
+Congratulations, you have deployed the Kafka Spotguide to Kubernetes!
 Your release is named `{{ .Release.Name }}`.
 
 > Please note that if security scan was enabled for your cluster, running kafka for the first time may take longer than usual!
 > Please be patient.
 
-To run the below mentioned commands the Kubernetes config needs to be set properly. To do so, run the following commands:
+To run the commands below, the Kubernetes config needs to be set properly by running the following commands:
 
 ### Get the Kubernetes config
 
@@ -35,17 +35,27 @@ Follow this documentation on Amazon how to get and install the prebuilt binary: 
 
 To have access to the Kubernetes cluster, install the Kubernetes command-line tool: [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/).
 
-### Use Kafka outside of Kubernetes
+### Accessing Kafka from outside of your Kubernetes cluster
 
 To access Kafka outside of the Kubernetes cluster the `Loadbalancer` address needs to be retrieved:
 
 External IP:
 
+{{- if and .Values.banzaicloud.cluster (eq .Values.banzaicloud.cluster.distribution "eks") }}
+```bash
+export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} -o jsonpath="{.status.loadBalancer.ingress[0].hostname}" envoy-loadbalancer)
+
+echo $SERVICE_IP
+```
+{{- end }}
+
+{{- if and .Values.banzaicloud.cluster (not (eq .Values.banzaicloud.cluster.distribution "eks")) }}
 ```bash
 export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} -o jsonpath="{.status.loadBalancer.ingress[0].ip}" envoy-loadbalancer)
 
 echo $SERVICE_IP
 ```
+{{- end }}
 
 Ports:
 
@@ -60,9 +70,9 @@ export SERVICE_PORT=${SERVICE_PORTS[@]:0:1}
 echo $SERVICE_PORT
 ```
 
-> To save resources Spotguide using only one LoadBalancer to access all brokers. To achieve that all broker receives its own port. For example: broker-0 will be available on port 19090, broker-1 on port 19091...
+> To save resources this Spotguide is using only one LoadBalancer to access all brokers and each broker is assigned to its own port For example: broker-0 will be available on port 19090, broker-1 on port 19091...
 
-To try Kafka out, we recommend to use [Kafkacat](https://github.com/edenhill/kafkacat).
+To try Kafka, we recommend you use [Kafkacat](https://github.com/edenhill/kafkacat).
 
 __MacOS__:
 
@@ -101,11 +111,11 @@ java -jar kafka-spotguide-example-1.0-SNAPSHOT.jar $SERVICE_IP:$SERVICE_PORT
 
 ```
 
-### Use Kafka inside of Kubernetes
+### Using Kafka inside of Kubernetes
 
-To use Kafka inside the cluster create a Pod which contains `Kafkacat`.
+To use Kafka inside the cluster, create a Pod which contains `Kafkacat`.
 
-The following command will create a `kafka-test` pod in `{{ .Release.Namespace }}` namespace.
+The following command will create a `kafka-test` pod in the `{{ .Release.Namespace }}` namespace.
 
 ```bash
 kubectl create -n {{ .Release.Namespace }} -f - <<EOF
@@ -131,7 +141,7 @@ kubectl exec -it -n {{ .Release.Namespace }} kafka-test bash
 # Produce some message
 kafkacat -P -b kafka-headless:29092 -t spotguide-kafka
 
-# Consume it
+# Consume them
 kafkacat -C -b kafka-headless:29092 -t spotguide-kafka
 ```
 
