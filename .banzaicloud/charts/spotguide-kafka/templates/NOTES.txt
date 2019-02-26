@@ -91,6 +91,7 @@ java -jar kafka-spotguide-example-1.0-SNAPSHOT.jar <your-bootstrap-server-addres
 To use Kafka inside the cluster create a Pod which contains `Kafkacat`.
 
 The following command will create a `kafka-test` pod in kafka namespace.
+
 ```
 kubectl create -n kafka -f - <<EOF 
 apiVersion: v1
@@ -106,6 +107,7 @@ spec:
     args: [ "while true; do sleep 3000; done;" ]
 EOF
 ```
+
 Then exec into the container and produce and consume some messages:
 
 ```
@@ -133,5 +135,3 @@ Every time you make changes to the source code and update the `master` branch, t
 [Go to CI/CD]({{ $.Values.banzaicloud.organization.name }}/cicd/{{ include "repo-name" . }})
 
 {{- end }}
-
-{{- if .Values.banzaicloud.organization.name }}
