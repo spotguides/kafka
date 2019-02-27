@@ -57,4 +57,4 @@ questions:
   default: '3'
   group: Zookeeper
   targets:
-    - deploy_zookeeper.deployment.values.cluster.size
+    - deploy_zk.deployment.values.cluster.size
