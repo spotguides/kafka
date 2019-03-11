@@ -95,8 +95,8 @@ kafkacat -b $SERVICE_IP:$SERVICE_PORT -L
 
 #### Run the sample WordCount Kafka Streams application
 
-Download the following [jar](https://github.com/banzaicloud/kafka-spotguide-example/blob/master/target/kafka-spotguide-example-1.0-SNAPSHOT.jar?raw=true) or
-visit the [example](https://github.com/banzaicloud/kafka-spotguide-example) repository and build the WordCount example.
+Download the following [jar](https://github.com/spotguides/kafka/raw/master/kafka-spotguide-example/target/kafka-spotguide-example-1.0-SNAPSHOT.jar) or
+visit the [example](https://github.com/spotguides/kafka/tree/master/kafka-spotguide-example) repository and build the WordCount example.
 
 Produce some message to topic `streams-plaintext-input`, run the downloaded jar and read the processed values from `streams-wordcount-output`:
 
