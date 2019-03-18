@@ -13,6 +13,8 @@ spec:
   brokers: {{.Values.brokers.replicas}}
   annotations: {}
   image: "{{.Values.image.repository}}:{{.Values.image.tag}}"
+  zkAddress:  "{{.Values.zk.url}}"
+  restProxyEnabled: "{{.Values.restProxy.enabled}}"
   brokerConfig: |
     log.dirs=/kafka-logs/kafka
     {{- .Values.brokers.config | nindent 4}}
