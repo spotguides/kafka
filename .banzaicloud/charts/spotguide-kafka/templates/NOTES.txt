@@ -148,7 +148,9 @@ kafkacat -C -b kafka-headless:29092 -t spotguide-kafka
 {{- if .Values.banzaicloud.restProxy.enabled}}
 ### Kafka RestProxy
 Kafka-Pixy is a dual API (gRPC and REST) proxy for Kafka with automatic consumer group control.
+
 It is available only inside the cluster on `rest-proxy-svc.kafka:80`
+
 Please read the documentation for further details about usage:
 https://github.com/mailgun/kafka-pixy/blob/master/README.md
 
@@ -159,7 +161,7 @@ https://github.com/mailgun/kafka-pixy/blob/master/README.md
 
 ```
 git clone https://github.com/confluentinc/cp-helm-charts.git
-helm install --namespace kafka --set kafka.bootstrapServers="PLAINTEXT://kafka-headless:9092" cp-helm-charts/charts/cp-schema-registry
+helm install -n schema-reg --namespace kafka --set kafka.bootstrapServers="PLAINTEXT://kafka-headless.kafka:29092" cp-helm-charts/charts/cp-schema-registry
 ```
 {{- end }}
 
