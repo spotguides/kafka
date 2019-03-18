@@ -46,7 +46,6 @@ questions:
   label: 'Broker properties'
   required: false
   default: |
-    zookeeper.connect=zookeeper-cluster-client.zookeeper:2181
     default.replication.factor=3
     num.partitions=3
   targets:
@@ -58,3 +57,25 @@ questions:
   group: Zookeeper
   targets:
     - deploy_zk.deployment.values.cluster.size
+- type: pipeline
+  dataType: boolean
+  label: 'Schema Registry enabled'
+  default: 'true'
+  group: Kafka
+  targets:
+    - deploy_kafka.deployment.values.banzaicloud.schemaRegistry.enabled
+- type: pipeline
+  dataType: string
+  label: 'Zk server address'
+  required: true
+  default: 'zookeeper-cluster-client.zookeeper:2181'
+  group: Kafka
+  targets:
+    - deploy_kafka.deployment.values.banzaicloud.zk.url
+- type: pipeline
+  dataType: boolean
+  label: 'Rest Proxy enabled'
+  default: 'true'
+  group: Kafka
+  targets:
+    - deploy_kafka.deployment.values.banzaicloud.restProxy.enabled

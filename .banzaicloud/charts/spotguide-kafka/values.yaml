@@ -4,6 +4,15 @@ brokers:
   replicas: 3
   config:
 
+restProxy:
+  enabled: true
+
+schemaRegistry:
+  enabled: true
+
+zk:
+  url: zookeeper-cluster-client.zookeeper:2181
+
 image:
   repository: wurstmeister/kafka
   tag: 2.12-2.1.0
