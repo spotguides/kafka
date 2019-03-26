@@ -162,6 +162,8 @@ https://github.com/mailgun/kafka-pixy/blob/master/README.md
 ```
 git clone https://github.com/confluentinc/cp-helm-charts.git
 helm install -n schema-reg --namespace kafka --set kafka.bootstrapServers="PLAINTEXT://kafka-headless.kafka:29092" cp-helm-charts/charts/cp-schema-registry
+
+It is also accessable only from inside the cluster on service: `schema-reg-cp-schema-registry.kafka:8081`
 ```
 {{- end }}
 
