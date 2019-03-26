@@ -14,7 +14,6 @@ questions:
   dataType: enum
   key: kafka_version_enum
   label: 'Kafka Version'
-  description: ''
   default: '2.12-2.1.0'
   required: true
   group: Kafka
@@ -39,11 +38,63 @@ questions:
   targets:
     - deploy_kafka.deployment.values.brokers.disk.size
 - type: pipeline
+  dataType: boolean
+  key: sslinter
+  description: Rest Proxy can only be enabled when brokers are communication via plaintext because proxy does not support SSL/SCRAM connections to brokers
+  label: 'Enable SSL for inter broker communication'
+  default: true
+  group: Kafka
+  targets: []
+- type: pipeline
+  dataType: boolean
+  key: sslexternal
+  label: 'Enable SSL for external broker communication'
+  default: true
+  group: Kafka
+  targets: []
+- type: pipeline
+  dataType: boolean
+  key: saslscarminter
+  label: 'Enable SASL/SCRAM for inter broker communication'
+  default: true
+  group: Kafka
+  showIf:
+    properties:
+        sslinter:
+          const: true
+  targets: []
+- type: pipeline
+  dataType: boolean
+  label: 'Enable SASL/SCRAM for external broker communication'
+  key: saslscarmexternal
+  default: true
+  group: Kafka
+  showIf:
+    properties:
+        sslexternal:
+          const: true
+  targets: []
+- type: secret
+  name: auth
+  dataType: password
+  label: 'SASL/SCRAM auth credentials'
+  group: Kafka
+  showIf:
+    anyOf:
+    - properties:
+        saslscarminter:
+          const: true
+    - properties:
+        saslscarmexternal:
+          const: true
+  targets: []
+- type: pipeline
   dataType: string
   controlType: code
   config:
     mode: properties
   label: 'Broker properties'
+  group: Kafka
   required: false
   default: |
     default.replication.factor=3
@@ -60,8 +111,8 @@ questions:
 - type: pipeline
   dataType: boolean
   label: 'Schema Registry enabled'
-  default: 'true'
-  group: Kafka
+  default: true
+  group: Schema Registry
   targets:
     - deploy_kafka.deployment.values.banzaicloud.schemaRegistry.enabled
 - type: pipeline
@@ -75,7 +126,11 @@ questions:
 - type: pipeline
   dataType: boolean
   label: 'Rest Proxy enabled'
-  default: 'true'
-  group: Kafka
+  default: true
+  group: Rest Proxy
+  showIf:
+    properties:
+      sslinter:
+        const: false
   targets:
     - deploy_kafka.deployment.values.banzaicloud.restProxy.enabled
