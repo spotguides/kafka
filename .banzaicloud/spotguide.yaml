@@ -13,27 +13,27 @@ questions:
 - type: pipeline
   dataType: enum
   key: kafka_version_enum
-  label: 'Kafka Version'
-  default: '2.12-2.1.0'
+  label: Kafka Version
+  default: 2.12-2.1.0
   required: true
   group: Kafka
   options:
-  - '2.12-2.1.0'
-  - '2.11.1.1.1'
+  - 2.12-2.1.0
+  - 2.11.1.1.1
   targets:
     - deploy_kafka.deployment.values.image.tag
 - type: pipeline
   dataType: string
-  label: 'Number of Kafka brokers'
-  default: '3'
+  label: Number of Kafka brokers
+  default: 3
   group: Kafka
   targets:
     - deploy_kafka.deployment.values.brokers.replicas
 - type: pipeline
   dataType: string
-  label: 'Persistent Volume size'
+  label: Persistent Volume size
   pattern: ^\d+(E|P|T|G|M|K|Ei|Pi|Ti|Gi|Mi|Ki)?$
-  default: '10Gi'
+  default: 10Gi
   group: Kafka
   targets:
     - deploy_kafka.deployment.values.brokers.disk.size
@@ -41,21 +41,21 @@ questions:
   dataType: boolean
   key: sslinter
   description: Rest Proxy can only be enabled when brokers are communication via plaintext because proxy does not support SSL/SCRAM connections to brokers
-  label: 'Enable SSL for inter broker communication'
+  label: Enable SSL for inter broker communication
   default: true
   group: Kafka
   targets: []
 - type: pipeline
   dataType: boolean
   key: sslexternal
-  label: 'Enable SSL for external broker communication'
+  label: Enable SSL for external broker communication
   default: true
   group: Kafka
   targets: []
 - type: pipeline
   dataType: boolean
   key: saslscarminter
-  label: 'Enable SASL/SCRAM for inter broker communication'
+  label: Enable SASL/SCRAM for inter broker communication
   default: true
   group: Kafka
   showIf:
@@ -65,7 +65,7 @@ questions:
   targets: []
 - type: pipeline
   dataType: boolean
-  label: 'Enable SASL/SCRAM for external broker communication'
+  label: Enable SASL/SCRAM for external broker communication
   key: saslscarmexternal
   default: true
   group: Kafka
@@ -77,7 +77,7 @@ questions:
 - type: secret
   name: auth
   dataType: password
-  label: 'SASL/SCRAM auth credentials'
+  label: SASL/SCRAM auth credentials
   group: Kafka
   showIf:
     anyOf:
@@ -93,9 +93,10 @@ questions:
   controlType: code
   config:
     mode: properties
-  label: 'Broker properties'
+  label: Broker properties
   group: Kafka
   required: false
+  description: Any Kafka Broker config can be set here except zookeeper.connect, log.dirs, broker.id, all sasl. and ssl. related ones. These settings are taken care of by the Spotguide.
   default: |
     default.replication.factor=3
     num.partitions=3
@@ -103,29 +104,30 @@ questions:
    - deploy_kafka.deployment.values.brokers.config
 - type: pipeline
   dataType: string
-  label: 'Number of Zookeeper nodes'
-  default: '3'
+  label: Number of Zookeeper nodes
+  default: 3
   group: Zookeeper
   targets:
     - deploy_zk.deployment.values.cluster.size
 - type: pipeline
   dataType: boolean
-  label: 'Schema Registry enabled'
+  label: Schema Registry enabled
   default: true
+  description: By enabling true, does not installs the Schema Registry. It just gives a thorough guide how to install it.
   group: Schema Registry
   targets:
     - deploy_kafka.deployment.values.banzaicloud.schemaRegistry.enabled
 - type: pipeline
   dataType: string
-  label: 'Zk server address'
+  label: Zk server address
   required: true
-  default: 'zookeeper-cluster-client.zookeeper:2181'
+  default: zookeeper-cluster-client.zookeeper:2181
   group: Kafka
   targets:
     - deploy_kafka.deployment.values.banzaicloud.zk.url
 - type: pipeline
   dataType: boolean
-  label: 'Rest Proxy enabled'
+  label: Rest Proxy enabled
   default: true
   group: Rest Proxy
   showIf:
