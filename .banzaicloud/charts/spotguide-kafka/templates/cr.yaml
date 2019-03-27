@@ -17,6 +17,7 @@ spec:
   restProxyEnabled: {{.Values.restProxy.enabled}}
   brokerConfig: |
     log.dirs=/kafka-logs/kafka
+    ssl.endpoint.identification.algorithm=
     {{- .Values.brokers.config | nindent 4}}
   listeners:
 {{- if or (eq (.Values.brokers.ssl.mechanism) "external") (eq (.Values.brokers.ssl.mechanism) "both") }}

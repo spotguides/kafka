@@ -72,6 +72,28 @@ questions:
   targets:
     - deploy_kafka.deployment.values.brokers.sasl.enabled
 - type: secret
+  name: sslkeys
+  description: Only the host and the name field is required during generating the ssl secret. We are going to support ssl.endpoint.identification.algorithm=https soon, but now use localhost as a host.
+  dataType: tls
+  required:
+    input: true
+  label: SSL keys for Kafka
+  group: Kafka
+  showIf:
+    anyOf:
+    - properties:
+        ssl:
+          const: both
+    - properties:
+        ssl:
+          const: internal
+    - properties:
+        ssl:
+          const: external
+  spec: []
+  targets:
+    - name: install_ssl_secrets.clusterSecret.sourceSecretName
+- type: secret
   name: auth
   dataType: password
   label: SASL/SCRAM auth credentials
@@ -87,8 +109,9 @@ questions:
     - properties:
         ssl:
           const: external
+  spec: []
   targets:
-    - name: deploy_kafka.deployment.values.brokers.sasl.secretName
+    - name: install_sasl_secrets.clusterSecret.sourceSecretName
 - type: pipeline
   dataType: string
   controlType: code

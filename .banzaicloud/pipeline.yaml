@@ -28,6 +28,23 @@ pipeline:
       releaseName: '{{ .CICD_REPO_NAME }}-kafka-operator'
       namespace: kafka
 
+{{{{- if not (eq (.pipeline.deploy_kafka.deployment.values.brokers.ssl.mechanism "none")) }}}}
+  install_ssl_secrets:
+    image: banzaicloud/ci-pipeline-client:0.10
+    action: InstallSecret
+    clusterSecret:
+      name: '{{ .CICD_REPO_NAME }}-ssl'
+      namespace: kafka
+      merge: true
+  install_sasl_secrets:
+    image: banzaicloud/ci-pipeline-client:0.10
+    action: InstallSecret
+    clusterSecret:
+      name: '{{ .CICD_REPO_NAME }}-sasl'
+      namespace: kafka
+      merge: true
+{{{{- end}}}}
+
   package_kafka:
     image: lachlanevenson/k8s-helm:latest
     commands:
@@ -41,3 +58,11 @@ pipeline:
       name: './spotguide-kafka-1.0.1.tgz'
       releaseName: '{{ .CICD_REPO_NAME }}'
       namespace: kafka
+{{{{- if not (eq (.pipeline.deploy_kafka.deployment.values.brokers.ssl.mechanism "none")) }}}}
+      values:
+        brokers:
+          ssl:
+            secretName: '{{ .CICD_REPO_NAME }}-ssl'
+          sasl:
+            secretName: '{{ .CICD_REPO_NAME }}-sasl'
+{{{{- end}}}}
