@@ -38,42 +38,39 @@ questions:
   targets:
     - deploy_kafka.deployment.values.brokers.disk.size
 - type: pipeline
-  dataType: boolean
-  key: sslinter
+  dataType: enum
+  key: ssl
   description: Rest Proxy can only be enabled when brokers are communication via plaintext because proxy does not support SSL/SCRAM connections to brokers
-  label: Enable SSL for inter broker communication
-  default: true
+  label: Enable SSL for Kafka
+  default: both
+  options:
+  - both
+  - internal
+  - external
+  - none
   group: Kafka
-  targets: []
+  targets:
+    - deploy_kafka.deployment.values.brokers.ssl.mechanism
 - type: pipeline
   dataType: boolean
-  key: sslexternal
-  label: Enable SSL for external broker communication
-  default: true
-  group: Kafka
-  targets: []
-- type: pipeline
-  dataType: boolean
-  key: saslscarminter
-  label: Enable SASL/SCRAM for inter broker communication
+  key: saslscarm
+  disabled: true
+  label: Enable SASL/SCRAM for Kafka
   default: true
   group: Kafka
   showIf:
-    properties:
-        sslinter:
-          const: true
-  targets: []
-- type: pipeline
-  dataType: boolean
-  label: Enable SASL/SCRAM for external broker communication
-  key: saslscarmexternal
-  default: true
-  group: Kafka
-  showIf:
-    properties:
-        sslexternal:
-          const: true
-  targets: []
+    anyOf:
+    - properties:
+        ssl:
+          const: both
+    - properties:
+        ssl:
+          const: internal
+    - properties:
+        ssl:
+          const: external
+  targets:
+    - deploy_kafka.deployment.values.brokers.sasl.enabled
 - type: secret
   name: auth
   dataType: password
@@ -82,12 +79,16 @@ questions:
   showIf:
     anyOf:
     - properties:
-        saslscarminter:
-          const: true
+        ssl:
+          const: both
     - properties:
-        saslscarmexternal:
-          const: true
-  targets: []
+        ssl:
+          const: internal
+    - properties:
+        ssl:
+          const: external
+  targets:
+    - name: deploy_kafka.deployment.values.brokers.sasl.secretName
 - type: pipeline
   dataType: string
   controlType: code
@@ -131,8 +132,12 @@ questions:
   default: true
   group: Rest Proxy
   showIf:
-    properties:
-      sslinter:
-        const: false
+    anyOf:
+    - properties:
+        ssl:
+          const: none
+    - properties:
+        ssl:
+          const: external
   targets:
     - deploy_kafka.deployment.values.banzaicloud.restProxy.enabled

@@ -19,15 +19,33 @@ spec:
     log.dirs=/kafka-logs/kafka
     {{- .Values.brokers.config | nindent 4}}
   listeners:
+{{- if or (eq (.Values.brokers.ssl.mechanism) "external") (eq (.Values.brokers.ssl.mechanism) "both") }}
+    externalListener:
+      - type: "sasl_ssl"
+        name: "external"
+        externalStartingPort: 19090
+        containerPort: 9094
+{{- else }}
     externalListener:
       - type: "plaintext"
         name: "external"
         externalStartingPort: 19090
         containerPort: 9094
+{{- end}}
+{{- if or (eq (.Values.brokers.ssl.mechanism) "internal") (eq (.Values.brokers.ssl.mechanism) "both") }}
     internalListener:
-      - type: "plaintext"
-        name: "internal"
+      - type: "sasl_ssl"
+        name: "sasl_ssl"
         containerPort: 29092
         usedForInnerBrokerCommunication: true
+{{- else }}
+    internalListener:
+      - type: "plaintext"
+        name: "plaintext"
+        containerPort: 29092
+        usedForInnerBrokerCommunication: true
+{{- end }}
+    tlsSecretName: "{{.Values.brokers.ssl.secretName}}"
+    saslSecret: "{{.Values.brokers.sasl.secretName}}"
   serviceAccount: ""
   storageSize: "{{.Values.brokers.disk.size}}"
