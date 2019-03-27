@@ -28,7 +28,7 @@ pipeline:
       releaseName: '{{ .CICD_REPO_NAME }}-kafka-operator'
       namespace: kafka
 
-{{{{- if not (eq (.pipeline.deploy_kafka.deployment.values.brokers.ssl.mechanism "none")) }}}}
+{{{{- if (not (eq .pipeline.deploy_kafka.deployment.values.brokers.ssl.mechanism "none")) }}}}
   install_ssl_secrets:
     image: banzaicloud/ci-pipeline-client:0.10
     action: InstallSecret
@@ -36,6 +36,7 @@ pipeline:
       name: '{{ .CICD_REPO_NAME }}-ssl'
       namespace: kafka
       merge: true
+      spec:
   install_sasl_secrets:
     image: banzaicloud/ci-pipeline-client:0.10
     action: InstallSecret
@@ -43,6 +44,7 @@ pipeline:
       name: '{{ .CICD_REPO_NAME }}-sasl'
       namespace: kafka
       merge: true
+      spec:
 {{{{- end}}}}
 
   package_kafka:
@@ -58,11 +60,13 @@ pipeline:
       name: './spotguide-kafka-1.0.1.tgz'
       releaseName: '{{ .CICD_REPO_NAME }}'
       namespace: kafka
-{{{{- if not (eq (.pipeline.deploy_kafka.deployment.values.brokers.ssl.mechanism "none")) }}}}
       values:
         brokers:
           ssl:
+{{{{- if (not (eq .pipeline.deploy_kafka.deployment.values.brokers.ssl.mechanism "none")) }}}}
             secretName: '{{ .CICD_REPO_NAME }}-ssl'
+{{{{- end}}}}
           sasl:
+{{{{- if (not (eq .pipeline.deploy_kafka.deployment.values.brokers.ssl.mechanism "none")) }}}}
             secretName: '{{ .CICD_REPO_NAME }}-sasl'
 {{{{- end}}}}

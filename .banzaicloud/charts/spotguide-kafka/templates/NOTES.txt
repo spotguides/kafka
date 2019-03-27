@@ -144,7 +144,7 @@ kafkacat -P -b kafka-headless:29092 -t spotguide-kafka
 # Consume them
 kafkacat -C -b kafka-headless:29092 -t spotguide-kafka
 ```
-
+{{- if or (eq (.Values.brokers.ssl.mechanism) "external") (eq (.Values.brokers.ssl.mechanism) "both") }}
 {{- if .Values.banzaicloud.restProxy.enabled}}
 ### Kafka RestProxy
 Kafka-Pixy is a dual API (gRPC and REST) proxy for Kafka with automatic consumer group control.
@@ -154,6 +154,7 @@ It is available only inside the cluster on `rest-proxy-svc.kafka:80`
 Please read the documentation for further details about usage:
 https://github.com/mailgun/kafka-pixy/blob/master/README.md
 
+{{- end }}
 {{- end }}
 
 {{- if .Values.banzaicloud.schemaRegistry.enabled}}

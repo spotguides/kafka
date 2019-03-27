@@ -18,15 +18,17 @@ questions:
   required: true
   group: Kafka
   options:
-  - 2.12-2.1.0
-  - 2.11.1.1.1
+    - 2.12-2.1.0
+    - 2.11.1.1.1
   targets:
     - deploy_kafka.deployment.values.image.tag
 - type: pipeline
-  dataType: string
+  dataType: number
   label: Number of Kafka brokers
   default: 3
   group: Kafka
+  required: true
+  min: 1
   targets:
     - deploy_kafka.deployment.values.brokers.replicas
 - type: pipeline
@@ -34,6 +36,7 @@ questions:
   label: Persistent Volume size
   pattern: ^\d+(E|P|T|G|M|K|Ei|Pi|Ti|Gi|Mi|Ki)?$
   default: 10Gi
+  required: true
   group: Kafka
   targets:
     - deploy_kafka.deployment.values.brokers.disk.size
@@ -43,11 +46,12 @@ questions:
   description: Rest Proxy can only be enabled when brokers are communication via plaintext because proxy does not support SSL/SCRAM connections to brokers
   label: Enable SSL for Kafka
   default: both
+  required: true
   options:
-  - both
-  - internal
-  - external
-  - none
+    - both
+    - internal
+    - external
+    - none
   group: Kafka
   targets:
     - deploy_kafka.deployment.values.brokers.ssl.mechanism
@@ -59,16 +63,12 @@ questions:
   default: true
   group: Kafka
   showIf:
-    anyOf:
-    - properties:
-        ssl:
-          const: both
-    - properties:
-        ssl:
-          const: internal
-    - properties:
-        ssl:
-          const: external
+    properties:
+      ssl:
+        enum:
+          - both
+          - internal
+          - external
   targets:
     - deploy_kafka.deployment.values.brokers.sasl.enabled
 - type: secret
@@ -76,21 +76,19 @@ questions:
   description: Only the host and the name field is required during generating the ssl secret. We are going to support ssl.endpoint.identification.algorithm=https soon, but now use localhost as a host.
   dataType: tls
   required:
-    input: true
+    input: false
+    hosts: true
+  default:
+    hosts: localhost
   label: SSL keys for Kafka
   group: Kafka
   showIf:
-    anyOf:
-    - properties:
-        ssl:
-          const: both
-    - properties:
-        ssl:
-          const: internal
-    - properties:
-        ssl:
-          const: external
-  spec: []
+    properties:
+      ssl:
+        enum:
+          - both
+          - internal
+          - external
   targets:
     - name: install_ssl_secrets.clusterSecret.sourceSecretName
 - type: secret
@@ -98,18 +96,18 @@ questions:
   dataType: password
   label: SASL/SCRAM auth credentials
   group: Kafka
+  default:
+    input: false
+    username: username
+  required:
+    username: true
   showIf:
-    anyOf:
-    - properties:
-        ssl:
-          const: both
-    - properties:
-        ssl:
-          const: internal
-    - properties:
-        ssl:
-          const: external
-  spec: []
+    properties:
+      ssl:
+        enum:
+          - both
+          - internal
+          - external
   targets:
     - name: install_sasl_secrets.clusterSecret.sourceSecretName
 - type: pipeline
@@ -125,11 +123,14 @@ questions:
     default.replication.factor=3
     num.partitions=3
   targets:
-   - deploy_kafka.deployment.values.brokers.config
+    - deploy_kafka.deployment.values.brokers.config
 - type: pipeline
-  dataType: string
+  dataType: number
   label: Number of Zookeeper nodes
   default: 3
+  min: 1
+  pattern: ^\d*[13579]$
+  required: true
   group: Zookeeper
   targets:
     - deploy_zk.deployment.values.cluster.size
@@ -143,7 +144,7 @@ questions:
     - deploy_kafka.deployment.values.banzaicloud.schemaRegistry.enabled
 - type: pipeline
   dataType: string
-  label: Zk server address
+  label: Zookeeper server address
   required: true
   default: zookeeper-cluster-client.zookeeper:2181
   group: Kafka
@@ -155,12 +156,10 @@ questions:
   default: true
   group: Rest Proxy
   showIf:
-    anyOf:
-    - properties:
-        ssl:
-          const: none
-    - properties:
-        ssl:
-          const: external
+    properties:
+      ssl:
+        enum:
+          - none
+          - external
   targets:
     - deploy_kafka.deployment.values.banzaicloud.restProxy.enabled
