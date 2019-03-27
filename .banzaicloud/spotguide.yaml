@@ -97,7 +97,6 @@ questions:
   label: SASL/SCRAM auth credentials
   group: Kafka
   default:
-    input: false
     username: username
   required:
     username: true
