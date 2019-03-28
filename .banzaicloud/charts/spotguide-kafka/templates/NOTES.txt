@@ -87,6 +87,24 @@ apt-get update
 apt-get install kafkacat
 ```
 
+{{- if or (eq (.Values.brokers.ssl.mechanism) "external") (eq (.Values.brokers.ssl.mechanism) "both") }}
+
+Fetch Brokers metadata:
+
+To fetch brokers metadata on a SASL_SSL enabled cluster, you need to download the following credentials.
+
+- [SASL username and password]({{ $.Values.banzaicloud.organization.name }}/secret?name={{ .Values.banzaicloud.saslauth.name }})
+- [Client key, cert and Ca cert]({{ $.Values.banzaicloud.organization.name }}/secret?name={{ .Values.banzaicloud.sslcerts.name }})
+
+```bash
+kafkacat -b $SERVICE_IP:$SERVICE_PORT -L -X security.protocol=SASL_SSL -X sasl.mechanisms=SCRAM-SHA-256 \ 
+-X sasl.username=<sasl_username> -X sasl.password=<sasl_password> -X ssl.key.location=<client.key.pem> \ 
+-X ssl.certificate.location=<client.crt.pem> \ 
+-X ssl.ca.location=<ca.crt.pem>
+```
+
+{{- else}}
+
 Fetch Brokers metadata:
 
 ```bash
@@ -111,11 +129,65 @@ java -jar kafka-spotguide-example-1.0-SNAPSHOT.jar $SERVICE_IP:$SERVICE_PORT
 
 ```
 
+{{- end }}
+
 ### Using Kafka inside of Kubernetes
 
 To use Kafka inside the cluster, create a Pod which contains `Kafkacat`.
 
 The following command will create a `kafka-test` pod in the `{{ .Release.Namespace }}` namespace.
+
+{{- if or (eq (.Values.brokers.ssl.mechanism) "internal") (eq (.Values.brokers.ssl.mechanism) "both") }}
+
+We are using Kubernetes secrets to store the generated ssl certs/keys and sasl credentials.
+We are mounting those secrets to be able to access them easily. 
+
+```bash
+kubectl create -n {{ .Release.Namespace }} -f - <<EOF
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kafka-test
+spec:
+  containers:
+  - name: kafka-test
+    image: solsson/kafkacat
+    # Just spin & wait forever
+    command: [ "/bin/bash", "-c", "--" ]
+    args: [ "while true; do sleep 3000; done;" ]
+    volumeMounts:
+    - name: saslauth
+      mountPath: "/sasl/auth"
+    - name: sslcerts
+      mountPath: "/ssl/certs"
+  volumes:
+  - name: saslauth
+    secret:
+      secretName: {{ include "repo-name" . }}-sasl
+  - name: sslcerts
+    secret:
+      secretName: {{ include "repo-name" . }}-ssl
+EOF
+```
+
+Then exec into the container and produce and consume some messages:
+
+```bash
+kubectl exec -it -n {{ .Release.Namespace }} kafka-test bash
+
+# Produce some message
+kafkacat -P -b kafka-headless:29092 -t spotguide-kafka -X security.protocol=SASL_SSL -X sasl.mechanisms=SCRAM-SHA-256 \ 
+-X sasl.username=$(cat /sasl/auth/username) -X sasl.password=$(cat /sasl/auth/password) -X ssl.key.location=/ssl/certs/clientKey \ 
+-X ssl.certificate.location=/ssl/certs/clientCert \ 
+-X ssl.ca.location=/ssl/certs/caCert
+
+# Consume them
+kafkacat -C -b kafka-headless:29092 -t spotguide-kafka -X security.protocol=SASL_SSL -X sasl.mechanisms=SCRAM-SHA-256 \ 
+-X sasl.username=$(cat /sasl/auth/username) -X sasl.password=$(cat /sasl/auth/password) -X ssl.key.location=/ssl/certs/clientKey \ 
+-X ssl.certificate.location=/ssl/certs/clientCert \ 
+-X ssl.ca.location=/ssl/certs/caCert
+
+{{- else }}
 
 ```bash
 kubectl create -n {{ .Release.Namespace }} -f - <<EOF
@@ -144,6 +216,8 @@ kafkacat -P -b kafka-headless:29092 -t spotguide-kafka
 # Consume them
 kafkacat -C -b kafka-headless:29092 -t spotguide-kafka
 ```
+
+{{- end}}
 
 {{- if .Values.restProxy.enabled}}
 ### Kafka RestProxy

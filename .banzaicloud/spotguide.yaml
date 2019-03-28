@@ -91,6 +91,7 @@ questions:
           - external
   targets:
     - name: install_ssl_secrets.clusterSecret.sourceSecretName
+    - name: deploy_kafka.deployment.values.banzaicloud.sslcerts.name
 - type: secret
   name: auth
   dataType: password
@@ -109,6 +110,7 @@ questions:
           - external
   targets:
     - name: install_sasl_secrets.clusterSecret.sourceSecretName
+    - name: deploy_kafka.deployment.values.banzaicloud.saslauth.name
 - type: pipeline
   dataType: string
   controlType: code
