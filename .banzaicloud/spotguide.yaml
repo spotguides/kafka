@@ -140,7 +140,7 @@ questions:
   description: By enabling true, does not installs the Schema Registry. It just gives a thorough guide how to install it.
   group: Schema Registry
   targets:
-    - deploy_kafka.deployment.values.banzaicloud.schemaRegistry.enabled
+    - deploy_kafka.deployment.values.schemaRegistry.enabled
 - type: pipeline
   dataType: string
   label: Zookeeper server address
@@ -148,7 +148,7 @@ questions:
   default: zookeeper-cluster-client.zookeeper:2181
   group: Kafka
   targets:
-    - deploy_kafka.deployment.values.banzaicloud.zk.url
+    - deploy_kafka.deployment.values.zk.url
 - type: pipeline
   dataType: boolean
   label: Rest Proxy enabled
@@ -161,4 +161,4 @@ questions:
           - none
           - external
   targets:
-    - deploy_kafka.deployment.values.banzaicloud.restProxy.enabled
+    - deploy_kafka.deployment.values.restProxy.enabled
