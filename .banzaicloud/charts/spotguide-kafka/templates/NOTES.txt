@@ -156,7 +156,7 @@ https://github.com/mailgun/kafka-pixy/blob/master/README.md
 
 {{- end }}
 
-{{- if .Values.banzaicloud.schemaRegistry.enabled}}
+{{- if .Values.schemaRegistry.enabled}}
 ### Install Schema Registry
 
 ```
