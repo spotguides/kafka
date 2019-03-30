@@ -20,7 +20,7 @@ spec:
     ssl.endpoint.identification.algorithm=
     {{- .Values.brokers.config | nindent 4}}
   listeners:
-{{- if or (eq (.Values.brokers.ssl.mechanism) "external") (eq (.Values.brokers.ssl.mechanism) "both") }}
+{{- if or (eq (.Values.brokers.ssl.mechanism) "External") (eq (.Values.brokers.ssl.mechanism) "Internal/External") }}
     externalListener:
       - type: "sasl_ssl"
         name: "external"
@@ -33,7 +33,7 @@ spec:
         externalStartingPort: 19090
         containerPort: 9094
 {{- end}}
-{{- if or (eq (.Values.brokers.ssl.mechanism) "internal") (eq (.Values.brokers.ssl.mechanism) "both") }}
+{{- if or (eq (.Values.brokers.ssl.mechanism) "Internal") (eq (.Values.brokers.ssl.mechanism) "Internal/External") }}
     internalListener:
       - type: "sasl_ssl"
         name: "sasl_ssl"

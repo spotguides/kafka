@@ -14,10 +14,10 @@ restProxy:
   enabled: false
 
 schemaRegistry:
-  enabled: true
+  enabled: false
 
 zk:
-  url: ""
+  url: "zookeeper-cluster-client.zookeeper:2181"
 
 image:
   repository: wurstmeister/kafka

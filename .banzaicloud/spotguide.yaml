@@ -13,9 +13,10 @@ questions:
 - type: pipeline
   dataType: enum
   key: kafka_version_enum
-  label: Kafka Version
+  label: Version
   default: 2.12-2.1.0
   required: true
+  order: 1
   group: Kafka
   options:
     - 2.12-2.1.0
@@ -24,8 +25,9 @@ questions:
     - deploy_kafka.deployment.values.image.tag
 - type: pipeline
   dataType: number
-  label: Number of Kafka brokers
+  label: Number of Brokers
   default: 3
+  order: 2
   group: Kafka
   required: true
   min: 1
@@ -36,6 +38,7 @@ questions:
   label: Persistent Volume size
   pattern: ^\d+(E|P|T|G|M|K|Ei|Pi|Ti|Gi|Mi|Ki)?$
   default: 10Gi
+  order: 3
   required: true
   group: Kafka
   targets:
@@ -43,58 +46,63 @@ questions:
 - type: pipeline
   dataType: enum
   key: ssl
-  description: Rest Proxy can only be enabled when brokers are communication via plaintext because proxy does not support SSL/SCRAM connections to brokers
-  label: Enable SSL for Kafka
-  default: both
+  order: 5
+  label: Encryption
+  default: Internal/External
   required: true
   options:
-    - both
-    - internal
-    - external
-    - none
+    - Internal/External
+    - Internal
+    - External
+    - None
   group: Kafka
   targets:
     - deploy_kafka.deployment.values.brokers.ssl.mechanism
 - type: pipeline
-  dataType: boolean
+  dataType: enum
   key: saslscarm
   disabled: true
-  label: Enable SASL/SCRAM for Kafka
-  default: true
+  label: Authentication
+  default: SASL/SCRAM
+  order: 7
+  options:
+    - SASL/SCRAM
   group: Kafka
   showIf:
     properties:
       ssl:
         enum:
-          - both
-          - internal
-          - external
+          - Internal/External
+          - Internal
+          - External
   targets:
     - deploy_kafka.deployment.values.brokers.sasl.enabled
 - type: secret
   name: sslkeys
   description: Only the host and the name field is required during generating the ssl secret. We are going to support ssl.endpoint.identification.algorithm=https soon, but now use localhost as a host.
   dataType: tls
+  order: 6
   required:
     input: false
     hosts: true
   default:
     hosts: localhost
-  label: SSL keys for Kafka
+  label: SSL keys
   group: Kafka
   showIf:
     properties:
       ssl:
         enum:
-          - both
-          - internal
-          - external
+          - Internal/External
+          - Internal
+          - External
   targets:
     - name: install_ssl_secrets.clusterSecret.sourceSecretName
     - name: deploy_kafka.deployment.values.banzaicloud.sslcerts.name
 - type: secret
   name: auth
   dataType: password
+  order: 8
   label: SASL/SCRAM auth credentials
   group: Kafka
   default:
@@ -105,9 +113,9 @@ questions:
     properties:
       ssl:
         enum:
-          - both
-          - internal
-          - external
+          - Internal/External
+          - Internal
+          - External
   targets:
     - name: install_sasl_secrets.clusterSecret.sourceSecretName
     - name: deploy_kafka.deployment.values.banzaicloud.saslauth.name
@@ -118,6 +126,7 @@ questions:
     mode: properties
   label: Broker properties
   group: Kafka
+  order: 4
   required: false
   description: Any Kafka Broker config can be set here except zookeeper.connect, log.dirs, broker.id, all sasl. and ssl. related ones. These settings are taken care of by the Spotguide.
   default: |
@@ -131,8 +140,13 @@ questions:
   default: 3
   min: 1
   pattern: ^\d*[13579]$
-  required: true
+  required: false
+  order: 3
   group: Zookeeper
+  showIf:
+    properties:
+      zkASetting:
+        const: true
   targets:
     - deploy_zk.deployment.values.cluster.size
 - type: pipeline
@@ -141,16 +155,34 @@ questions:
   default: true
   description: By enabling true, does not installs the Schema Registry. It just gives a thorough guide how to install it.
   group: Schema Registry
+  showIf:
+    properties:
+      ssl:
+        enum:
+          - None
+          - External
   targets:
     - deploy_kafka.deployment.values.schemaRegistry.enabled
 - type: pipeline
   dataType: string
   label: Zookeeper server address
-  required: true
+  required: false
+  order: 2
   default: zookeeper-cluster-client.zookeeper:2181
-  group: Kafka
+  group: Zookeeper
+  showIf:
+    properties:
+      zkASetting:
+        const: true
   targets:
     - deploy_kafka.deployment.values.zk.url
+- type: pipeline
+  dataType: boolean
+  key: zkASetting
+  label: Advanced Settings
+  default: false
+  order: 1
+  group: Zookeeper
 - type: pipeline
   dataType: boolean
   label: Rest Proxy enabled
@@ -160,7 +192,7 @@ questions:
     properties:
       ssl:
         enum:
-          - none
-          - external
+          - None
+          - External
   targets:
     - deploy_kafka.deployment.values.restProxy.enabled

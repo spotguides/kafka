@@ -28,7 +28,7 @@ pipeline:
       releaseName: '{{ .CICD_REPO_NAME }}-kafka-operator'
       namespace: kafka
 
-{{{{- if (not (eq .pipeline.deploy_kafka.deployment.values.brokers.ssl.mechanism "none")) }}}}
+{{{{- if (not (eq .pipeline.deploy_kafka.deployment.values.brokers.ssl.mechanism "None")) }}}}
   install_ssl_secrets:
     image: banzaicloud/ci-pipeline-client:0.10
     action: InstallSecret
@@ -63,10 +63,10 @@ pipeline:
       values:
         brokers:
           ssl:
-{{{{- if (not (eq .pipeline.deploy_kafka.deployment.values.brokers.ssl.mechanism "none")) }}}}
+{{{{- if (not (eq .pipeline.deploy_kafka.deployment.values.brokers.ssl.mechanism "None")) }}}}
             secretName: '{{ .CICD_REPO_NAME }}-ssl'
 {{{{- end}}}}
           sasl:
-{{{{- if (not (eq .pipeline.deploy_kafka.deployment.values.brokers.ssl.mechanism "none")) }}}}
+{{{{- if (not (eq .pipeline.deploy_kafka.deployment.values.brokers.ssl.mechanism "None")) }}}}
             secretName: '{{ .CICD_REPO_NAME }}-sasl'
 {{{{- end}}}}

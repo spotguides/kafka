@@ -87,7 +87,7 @@ apt-get update
 apt-get install kafkacat
 ```
 
-{{- if or (eq (.Values.brokers.ssl.mechanism) "external") (eq (.Values.brokers.ssl.mechanism) "both") }}
+{{- if or (eq (.Values.brokers.ssl.mechanism) "External") (eq (.Values.brokers.ssl.mechanism) "Internal/External") }}
 
 Fetch Brokers metadata:
 
@@ -137,7 +137,7 @@ To use Kafka inside the cluster, create a Pod which contains `Kafkacat`.
 
 The following command will create a `kafka-test` pod in the `{{ .Release.Namespace }}` namespace.
 
-{{- if or (eq (.Values.brokers.ssl.mechanism) "internal") (eq (.Values.brokers.ssl.mechanism) "both") }}
+{{- if or (eq (.Values.brokers.ssl.mechanism) "Internal") (eq (.Values.brokers.ssl.mechanism) "Internal/External") }}
 
 We are using Kubernetes secrets to store the generated ssl certs/keys and sasl credentials.
 We are mounting those secrets to be able to access them easily. 
@@ -231,14 +231,17 @@ https://github.com/mailgun/kafka-pixy/blob/master/README.md
 {{- end }}
 
 {{- if .Values.schemaRegistry.enabled}}
+
 ### Install Schema Registry
 
 ```
 git clone https://github.com/confluentinc/cp-helm-charts.git
+
 helm install -n schema-reg --namespace kafka --set kafka.bootstrapServers="PLAINTEXT://kafka-headless.kafka:29092" cp-helm-charts/charts/cp-schema-registry
 
 It is also accessable only from inside the cluster on service: `schema-reg-cp-schema-registry.kafka:8081`
 ```
+
 {{- end }}
 
 {{- if .Values.banzaicloud.organization.name }}
