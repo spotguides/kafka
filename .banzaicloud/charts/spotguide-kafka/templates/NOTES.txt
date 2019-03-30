@@ -174,18 +174,25 @@ Then exec into the container and produce and consume some messages:
 
 ```bash
 kubectl exec -it -n {{ .Release.Namespace }} kafka-test bash
+```
 
-# Produce some message
+#### Produce some message
+
+```bash
 kafkacat -P -b kafka-headless:29092 -t spotguide-kafka -X security.protocol=SASL_SSL -X sasl.mechanisms=SCRAM-SHA-256 \ 
 -X sasl.username=$(cat /sasl/auth/username) -X sasl.password=$(cat /sasl/auth/password) -X ssl.key.location=/ssl/certs/clientKey \ 
 -X ssl.certificate.location=/ssl/certs/clientCert \ 
 -X ssl.ca.location=/ssl/certs/caCert
+```
 
-# Consume them
+#### Consume them
+
+```bash
 kafkacat -C -b kafka-headless:29092 -t spotguide-kafka -X security.protocol=SASL_SSL -X sasl.mechanisms=SCRAM-SHA-256 \ 
 -X sasl.username=$(cat /sasl/auth/username) -X sasl.password=$(cat /sasl/auth/password) -X ssl.key.location=/ssl/certs/clientKey \ 
 -X ssl.certificate.location=/ssl/certs/clientCert \ 
 -X ssl.ca.location=/ssl/certs/caCert
+```
 
 {{- else }}
 
@@ -211,9 +218,11 @@ Then exec into the container and produce and consume some messages:
 kubectl exec -it -n {{ .Release.Namespace }} kafka-test bash
 
 # Produce some message
+
 kafkacat -P -b kafka-headless:29092 -t spotguide-kafka
 
 # Consume them
+
 kafkacat -C -b kafka-headless:29092 -t spotguide-kafka
 ```
 
