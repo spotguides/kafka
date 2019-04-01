@@ -21,8 +21,14 @@ spec:
         command: [
           "bin/bash",
           "-c",
-          "/opt/kafka/bin/kafka-acls.sh --authorizer-properties zookeeper.connect={{.Values.zk.url}} --add --allow-principal User:username --producer --topic spotguide-kafka && /opt/kafka/bin/kafka-acls.sh --authorizer-properties zookeeper.connect={{.Values.zk.url}} --add --allow-principal User:username --consumer --topic spotguide-kafka --group *",
-        ]
+          "/opt/kafka/bin/kafka-acls.sh --authorizer-properties zookeeper.connect={{.Values.zk.url}} --add --allow-principal User:$(cat /scram-secret/username) --producer --topic spotguide-kafka && /opt/kafka/bin/kafka-acls.sh --authorizer-properties zookeeper.connect={{.Values.zk.url}} --add --allow-principal User:$(cat /scram-secret/username) --consumer --topic spotguide-kafka --group *",]
+        volumeMounts:
+        - name: secret-volume
+          mountPath: /scram-secret
       restartPolicy: "OnFailure"
       serviceAccountName: "{{ template "kafka-spotguide.name" . }}"
+      volumes:
+      - name: secret-volume
+        secret:
+          secretName: "{{.Values.banzaicloud.saslauth.name}}"
 {{- end }}

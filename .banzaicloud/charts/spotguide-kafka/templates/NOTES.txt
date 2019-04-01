@@ -194,6 +194,12 @@ kafkacat -C -b kafka-headless:29092 -t spotguide-kafka -X security.protocol=SASL
 -X ssl.ca.location=/ssl/certs/caCert
 ```
 
+#### Get the admin password to add more topic and generate acl's
+
+```
+kubectl exec -it -n kafka kafka-0 cat /config/jaas/kafka_server_jaas.conf
+```
+
 {{- else }}
 
 ```bash
