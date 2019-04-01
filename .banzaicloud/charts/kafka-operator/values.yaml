@@ -3,5 +3,5 @@ rbac:
 
 image:
   repository: banzaicloud/kafka-operator
-  tag: 0.1.0
+  tag: 0.2.0
   pullPolicy: IfNotPresent
