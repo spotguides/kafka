@@ -1,7 +1,7 @@
 Congratulations, you have deployed the Kafka Spotguide to Kubernetes!
 Your release is named `{{ .Release.Name }}`.
 
-> Please note that if security scan was enabled for your cluster, running kafka for the first time may take longer than usual!
+> Please note that if security scan was enabled for your cluster, running Kafka for the first time may take longer than usual!
 > Please be patient.
 
 To run the commands below, the Kubernetes config needs to be set properly by running the following commands:
@@ -70,9 +70,9 @@ export SERVICE_PORT=${SERVICE_PORTS[@]:0:1}
 echo $SERVICE_PORT
 ```
 
-> To save resources this Spotguide is using only one LoadBalancer to access all brokers and each broker is assigned to its own port For example: broker-0 will be available on port 19090, broker-1 on port 19091...
+> To save resources this Spotguide is using only one LoadBalancer to access all brokers and each broker is assigned to its own port. For example: broker-0 will be available on port 19090, broker-1 on port 19091...
 
-To try Kafka, we recommend you use [Kafkacat](https://github.com/edenhill/kafkacat).
+To try Kafka, we recommend to use [Kafkacat](https://github.com/edenhill/kafkacat).
 
 __MacOS__:
 
@@ -118,7 +118,7 @@ visit the [example](https://github.com/spotguides/kafka/tree/master/kafka-spotgu
 
 Produce some message to topic `streams-plaintext-input`, run the downloaded jar and read the processed values from `streams-wordcount-output`:
 
-> Kafkacat does not [support](https://github.com/edenhill/kafkacat/issues/89) common Kafka Java deserializers so Kafka consumer must be used to view the results created by the Kafka Streaming App.
+> Kafkacat does not [support](https://github.com/edenhill/kafkacat/issues/89) common Kafka Java deserializers so a Kafka consumer must be used to view the results created by the Kafka Streaming App.
 
 ```bash
 kafkacat -P -b $SERVICE_IP:$SERVICE_PORT -t streams-plaintext-input
