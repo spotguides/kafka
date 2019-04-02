@@ -46,7 +46,6 @@ pipeline:
       merge: true
       spec:
 {{{{- end}}}}
-
   package_kafka:
     image: lachlanevenson/k8s-helm:latest
     commands:
@@ -69,4 +68,22 @@ pipeline:
           sasl:
 {{{{- if (not (eq .pipeline.deploy_kafka.deployment.values.brokers.ssl.mechanism "None")) }}}}
             secretName: '{{ .CICD_REPO_NAME }}-sasl'
+{{{{- end}}}}
+{{{{- if .pipeline.deploy_kafkahq.deployment.values.banzaicloud.ui.enabled }}}}
+  package_kafkahq:
+    image: lachlanevenson/k8s-helm:latest
+    commands:
+        - helm init -c
+        - helm package ./.banzaicloud/charts/kafkahq
+  deploy_kafkahq:
+    image: banzaicloud/ci-pipeline-client:0.10
+    action: EnsureDeployment
+    deployment:
+      name: './kafkahq-0.1.0.tgz'
+      releaseName: '{{ .CICD_REPO_NAME }}-kafkahq'
+      namespace: kafka
+      values:
+{{{{- if (not (eq .pipeline.deploy_kafka.deployment.values.brokers.ssl.mechanism "None")) }}}}
+        tlsSecretName: '{{ .CICD_REPO_NAME }}-ssl'
+{{{{- end}}}}
 {{{{- end}}}}

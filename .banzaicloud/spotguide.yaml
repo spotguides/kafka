@@ -196,3 +196,10 @@ questions:
           - External
   targets:
     - deploy_kafka.deployment.values.restProxy.enabled
+- type: pipeline
+  dataType: boolean
+  label: Kafka HQ enabled
+  default: true
+  group: Kafkahq
+  targets:
+    - deploy_kafkahq.deployment.values.banzaicloud.ui.enabled
