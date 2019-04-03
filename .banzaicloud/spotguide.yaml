@@ -79,14 +79,14 @@ questions:
     - deploy_kafka.deployment.values.brokers.sasl.enabled
 - type: secret
   name: sslkeys
-  description: Only the host and the name field is required during generating the ssl secret. We are going to support ssl.endpoint.identification.algorithm=https soon, but now use localhost as a host.
+  description: Only the host and the name field is required during generating the ssl secret. We are going to support ssl.endpoint.identification.algorithm=https soon, but now use kafka-0.kafka-headless.kafka.svc.cluster.local as a host.
   dataType: tls
   order: 6
   required:
     input: false
     hosts: true
   default:
-    hosts: localhost
+    hosts: kafka-0.kafka-headless.kafka.svc.cluster.local
   label: SSL keys
   group: Kafka
   showIf:
@@ -199,7 +199,20 @@ questions:
 - type: pipeline
   dataType: boolean
   label: Kafka HQ enabled
+  key: kafkahq
   default: true
   group: Kafkahq
   targets:
     - deploy_kafkahq.deployment.values.banzaicloud.ui.enabled
+- type: secret
+  dataType: htpasswd
+  name: kafkahqpass
+  group: Kafkahq
+  label: 'Kafkahq Auth Creds'
+  required: true
+  showIf:
+    properties:
+      kafkahq:
+        const: true
+  targets:
+    - name: install_kafkahq_auth_secrets.clusterSecret.sourceSecretName
