@@ -86,7 +86,7 @@ questions:
     input: false
     hosts: true
   default:
-    hosts: kafka-0.kafka-headless.kafka.svc.cluster.local
+    hosts: kafka-0.kafka-headless.kafka.svc.cluster.local,kafka-1.kafka-headless.kafka.svc.cluster.local,kafka-2.kafka-headless.kafka.svc.cluster.local,kafka-3.kafka-headless.kafka.svc.cluster.local,kafka-4.kafka-headless.kafka.svc.cluster.local,kafka-5.kafka-headless.kafka.svc.cluster.local,kafka-6.kafka-headless.kafka.svc.cluster.local,kafka-7.kafka-headless.kafka.svc.cluster.local
   label: SSL keys
   group: Kafka
   showIf:
@@ -204,6 +204,7 @@ questions:
   group: Kafkahq
   targets:
     - deploy_kafkahq.deployment.values.banzaicloud.ui.enabled
+    - deploy_kafka.deployment.values.banzaicloud.ui.enabled
 - type: secret
   dataType: htpasswd
   name: kafkahqpass
@@ -216,3 +217,4 @@ questions:
         const: true
   targets:
     - name: install_kafkahq_auth_secrets.clusterSecret.sourceSecretName
+    - name: deploy_kafka.deployment.values.banzaicloud.secret.kafkahq.name

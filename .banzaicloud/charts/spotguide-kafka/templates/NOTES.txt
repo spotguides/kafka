@@ -234,6 +234,21 @@ kafkacat -C -b kafka-headless:29092 -t spotguide-kafka
 
 {{- end}}
 
+{{- if .Values.banzaicloud.ui.enabled }}
+### Kafka UI
+
+Kafka HQ is an opensource Kafka UI which provides access for topics, consumer groups and schema registry details.
+
+The UI is accessable from here:
+
+{{ $hosts := index .Values "banzaicloud" "kafkahq" "ingress" "hosts" }}
+{{ range $hosts }}
+- [{{ . }}](https://{{ . }})
+{{- end }}
+
+- [User secret]({{ $.Values.banzaicloud.organization.name }}/secret?name={{ .Values.banzaicloud.secret.kafkahq.name }})
+{{- end }}
+
 {{- if .Values.restProxy.enabled}}
 ### Kafka RestProxy
 Kafka-Pixy is a dual API (gRPC and REST) proxy for Kafka with automatic consumer group control.
