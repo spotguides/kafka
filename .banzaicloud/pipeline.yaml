@@ -46,29 +46,6 @@ pipeline:
       merge: true
       spec:
 {{{{- end}}}}
-  package_kafka:
-    image: lachlanevenson/k8s-helm:latest
-    commands:
-      - helm init -c
-      - helm package ./.banzaicloud/charts/spotguide-kafka
-
-  deploy_kafka:
-    image: banzaicloud/ci-pipeline-client:0.10
-    action: EnsureDeployment
-    deployment:
-      name: './spotguide-kafka-1.0.1.tgz'
-      releaseName: '{{ .CICD_REPO_NAME }}'
-      namespace: kafka
-      values:
-        brokers:
-          ssl:
-{{{{- if (not (eq .pipeline.deploy_kafka.deployment.values.brokers.ssl.mechanism "None")) }}}}
-            secretName: '{{ .CICD_REPO_NAME }}-ssl'
-{{{{- end}}}}
-          sasl:
-{{{{- if (not (eq .pipeline.deploy_kafka.deployment.values.brokers.ssl.mechanism "None")) }}}}
-            secretName: '{{ .CICD_REPO_NAME }}-sasl'
-{{{{- end}}}}
 {{{{- if .pipeline.deploy_kafkahq.deployment.values.banzaicloud.ui.enabled }}}}
   install_kafkahq_auth_secrets:
     image: banzaicloud/ci-pipeline-client:0.10
@@ -109,4 +86,34 @@ pipeline:
 {{{{- if or (eq (.pipeline.deploy_kafka.deployment.values.brokers.ssl.mechanism) "Internal") (eq (.pipeline.deploy_kafka.deployment.values.brokers.ssl.mechanism) "Internal/External") }}}}
         tlsSecretName: '{{ .CICD_REPO_NAME }}-ssl'
 {{{{- end}}}}
+{{{{- end}}}}
+  package_kafka:
+    image: lachlanevenson/k8s-helm:latest
+    commands:
+      - helm init -c
+      - helm package ./.banzaicloud/charts/spotguide-kafka
+
+  deploy_kafka:
+    image: banzaicloud/ci-pipeline-client:0.10
+    action: EnsureDeployment
+    deployment:
+      name: './spotguide-kafka-1.0.1.tgz'
+      releaseName: '{{ .CICD_REPO_NAME }}'
+      namespace: kafka
+      values:
+        banzaicloud:
+{{{{- if .pipeline.deploy_kafkahq.deployment.values.banzaicloud.ui.enabled }}}}
+          kafkahq:
+            ingress:
+              hosts:
+                 - 'kafkahq-{{ (printf "%s-%s" .CICD_REPO_NAME .CLUSTER_NAME) | sha1sum | trunc 10}}.{{.ORG_NAME}}.{{.DOMAIN_NAME}}'
+{{{{- end }}}}
+        brokers:
+          ssl:
+{{{{- if (not (eq .pipeline.deploy_kafka.deployment.values.brokers.ssl.mechanism "None")) }}}}
+            secretName: '{{ .CICD_REPO_NAME }}-ssl'
+{{{{- end}}}}
+          sasl:
+{{{{- if (not (eq .pipeline.deploy_kafka.deployment.values.brokers.ssl.mechanism "None")) }}}}
+            secretName: '{{ .CICD_REPO_NAME }}-sasl'
 {{{{- end}}}}
