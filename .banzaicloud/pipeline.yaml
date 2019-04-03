@@ -70,11 +70,23 @@ pipeline:
             secretName: '{{ .CICD_REPO_NAME }}-sasl'
 {{{{- end}}}}
 {{{{- if .pipeline.deploy_kafkahq.deployment.values.banzaicloud.ui.enabled }}}}
+  install_kafkahq_auth_secrets:
+    image: banzaicloud/ci-pipeline-client:0.10
+    action: InstallSecret
+    clusterSecret:
+      name: '{{ .CICD_REPO_NAME }}-kafkahq'
+      namespace: kafka
+      merge: true
+      spec:
+        - name: htpasswd
+          source: htpasswd
+
   package_kafkahq:
     image: lachlanevenson/k8s-helm:latest
     commands:
         - helm init -c
         - helm package ./.banzaicloud/charts/kafkahq
+
   deploy_kafkahq:
     image: banzaicloud/ci-pipeline-client:0.10
     action: EnsureDeployment
@@ -83,7 +95,18 @@ pipeline:
       releaseName: '{{ .CICD_REPO_NAME }}-kafkahq'
       namespace: kafka
       values:
-{{{{- if (not (eq .pipeline.deploy_kafka.deployment.values.brokers.ssl.mechanism "None")) }}}}
+        ingress:
+          enabled: true
+          annotations:
+            kubernetes.io/ingress.class: traefik
+            traefik.frontend.rule.type: PathPrefixStrip
+            traefik.ingress.kubernetes.io/auth-type: basic
+            traefik.ingress.kubernetes.io/auth-secret: '{{ .CICD_REPO_NAME }}-kafkahq'
+            ingress.kubernetes.io/ssl-redirect: 'true'
+          hosts:
+            - 'kafkahq-{{ (printf "%s-%s" .CICD_REPO_NAME .CLUSTER_NAME) | sha1sum | trunc 10}}.{{.ORG_NAME}}.{{.DOMAIN_NAME}}'
+
+{{{{- if or (eq (.pipeline.deploy_kafka.deployment.values.brokers.ssl.mechanism) "Internal") (eq (.pipeline.deploy_kafka.deployment.values.brokers.ssl.mechanism) "Internal/External") }}}}
         tlsSecretName: '{{ .CICD_REPO_NAME }}-ssl'
 {{{{- end}}}}
 {{{{- end}}}}
