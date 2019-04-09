@@ -17,7 +17,6 @@ spec:
   restProxyEnabled: {{.Values.restProxy.enabled}}
   brokerConfig: |
     log.dirs=/kafka-logs/kafka
-    ssl.endpoint.identification.algorithm=
 {{- if or (eq (.Values.brokers.ssl.mechanism) "External") (eq (.Values.brokers.ssl.mechanism) "Internal/External") }}
     authorizer.class.name=kafka.security.auth.SimpleAclAuthorizer
     super.users=User:admin
