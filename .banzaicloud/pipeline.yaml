@@ -7,7 +7,7 @@ pipeline:
       - helm package ./.banzaicloud/charts/zookeeper
 
   deploy_zk:
-    image: banzaicloud/ci-pipeline-client:0.10
+    image: banzaicloud/ci-pipeline-client:0.11
     action: EnsureDeployment
     deployment:
       name: './zookeeper-0.0.1.tgz'
@@ -21,7 +21,7 @@ pipeline:
       - helm package ./.banzaicloud/charts/kafka-operator
 
   deploy_kafka_operator:
-    image: banzaicloud/ci-pipeline-client:0.10
+    image: banzaicloud/ci-pipeline-client:0.11
     action: EnsureDeployment
     deployment:
       name: './kafka-operator-0.2.0.tgz'
@@ -30,7 +30,7 @@ pipeline:
 
 {{{{- if (not (eq .pipeline.deploy_kafka.deployment.values.brokers.ssl.mechanism "None")) }}}}
   install_ssl_secrets:
-    image: banzaicloud/ci-pipeline-client:0.10
+    image: banzaicloud/ci-pipeline-client:0.11
     action: InstallSecret
     clusterSecret:
       name: '{{ .CICD_REPO_NAME }}-ssl'
@@ -38,7 +38,7 @@ pipeline:
       merge: true
       spec:
   install_sasl_secrets:
-    image: banzaicloud/ci-pipeline-client:0.10
+    image: banzaicloud/ci-pipeline-client:0.11
     action: InstallSecret
     clusterSecret:
       name: '{{ .CICD_REPO_NAME }}-sasl'
@@ -48,7 +48,7 @@ pipeline:
 {{{{- end}}}}
 {{{{- if .pipeline.deploy_kafkahq.deployment.values.banzaicloud.ui.enabled }}}}
   install_kafkahq_auth_secrets:
-    image: banzaicloud/ci-pipeline-client:0.10
+    image: banzaicloud/ci-pipeline-client:0.11
     action: InstallSecret
     clusterSecret:
       name: '{{ .CICD_REPO_NAME }}-kafkahq'
@@ -65,7 +65,7 @@ pipeline:
         - helm package ./.banzaicloud/charts/kafkahq
 
   deploy_kafkahq:
-    image: banzaicloud/ci-pipeline-client:0.10
+    image: banzaicloud/ci-pipeline-client:0.11
     action: EnsureDeployment
     deployment:
       name: './kafkahq-0.1.0.tgz'
@@ -94,7 +94,7 @@ pipeline:
       - helm package ./.banzaicloud/charts/spotguide-kafka
 
   deploy_kafka:
-    image: banzaicloud/ci-pipeline-client:0.10
+    image: banzaicloud/ci-pipeline-client:0.11
     action: EnsureDeployment
     deployment:
       name: './spotguide-kafka-1.0.1.tgz'
