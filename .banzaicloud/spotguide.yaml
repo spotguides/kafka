@@ -20,7 +20,6 @@ questions:
   group: Kafka
   options:
     - 2.12-2.1.0
-    - 2.11.1.1.1
   targets:
     - deploy_kafka.deployment.values.image.tag
 - type: pipeline
@@ -44,6 +43,21 @@ questions:
   targets:
     - deploy_kafka.deployment.values.brokers.disk.size
 - type: pipeline
+  dataType: string
+  controlType: code
+  config:
+    mode: properties
+  label: Broker properties
+  group: Kafka
+  order: 4
+  required: false
+  description: Any Kafka Broker config can be set here except zookeeper.connect, log.dirs, broker.id, all sasl. and ssl. related ones. These settings are taken care of by the Spotguide.
+  default: |
+    default.replication.factor=3
+    num.partitions=3
+  targets:
+    - deploy_kafka.deployment.values.brokers.config
+- type: pipeline
   dataType: enum
   key: ssl
   order: 5
@@ -58,25 +72,6 @@ questions:
   group: Kafka
   targets:
     - deploy_kafka.deployment.values.brokers.ssl.mechanism
-- type: pipeline
-  dataType: enum
-  key: saslscarm
-  disabled: true
-  label: Authentication
-  default: SASL/SCRAM
-  order: 7
-  options:
-    - SASL/SCRAM
-  group: Kafka
-  showIf:
-    properties:
-      ssl:
-        enum:
-          - Internal/External
-          - Internal
-          - External
-  targets:
-    - deploy_kafka.deployment.values.brokers.sasl.enabled
 - type: secret
   name: sslkeys
   description: Only the host and the name field is required during generating the ssl secret. ssl.endpoint.identification.algorithm=https is enabled by default so generate your certificate accordingly.
@@ -100,15 +95,14 @@ questions:
     - name: install_ssl_secrets.clusterSecret.sourceSecretName
     - name: deploy_kafka.deployment.values.banzaicloud.sslcerts.name
 - type: secret
-  name: auth
+  name: jks
   dataType: password
-  order: 8
-  label: SASL/SCRAM auth credentials
+  order: 7
+  label: Jks password
   group: Kafka
   default:
     username: username
-  required:
-    username: true
+  required: true
   showIf:
     properties:
       ssl:
@@ -117,38 +111,7 @@ questions:
           - Internal
           - External
   targets:
-    - name: install_sasl_secrets.clusterSecret.sourceSecretName
-    - name: deploy_kafka.deployment.values.banzaicloud.saslauth.name
-- type: pipeline
-  dataType: string
-  controlType: code
-  config:
-    mode: properties
-  label: Broker properties
-  group: Kafka
-  order: 4
-  required: false
-  description: Any Kafka Broker config can be set here except zookeeper.connect, log.dirs, broker.id, all sasl. and ssl. related ones. These settings are taken care of by the Spotguide.
-  default: |
-    default.replication.factor=3
-    num.partitions=3
-  targets:
-    - deploy_kafka.deployment.values.brokers.config
-- type: pipeline
-  dataType: number
-  label: Number of Zookeeper nodes
-  default: 3
-  min: 1
-  pattern: ^\d*[13579]$
-  required: false
-  order: 3
-  group: Zookeeper
-  showIf:
-    properties:
-      zkASetting:
-        const: true
-  targets:
-    - deploy_zk.deployment.values.cluster.size
+    - name: install_jks_secrets.clusterSecret.sourceSecretName
 - type: pipeline
   dataType: boolean
   label: Schema Registry enabled
@@ -163,19 +126,6 @@ questions:
           - External
   targets:
     - deploy_kafka.deployment.values.schemaRegistry.enabled
-- type: pipeline
-  dataType: string
-  label: Zookeeper server address
-  required: false
-  order: 2
-  default: zookeeper-cluster-client.zookeeper:2181
-  group: Zookeeper
-  showIf:
-    properties:
-      zkASetting:
-        const: true
-  targets:
-    - deploy_kafka.deployment.values.zk.url
 - type: pipeline
   dataType: boolean
   key: zkASetting
@@ -195,7 +145,37 @@ questions:
           - None
           - External
   targets:
-    - deploy_kafka.deployment.values.restProxy.enabled
+    - deploy_pixy.deployment.values.banzaicloud.pixy.enabled
+    - deploy_kafka.deployment.values.banzaicloud.pixy.enabled
+- type: pipeline
+  dataType: string
+  label: Zookeeper server address
+  required: false
+  order: 2
+  default: zookeeper-cluster-client.zookeeper:2181
+  group: Zookeeper
+  showIf:
+    properties:
+      zkASetting:
+        const: true
+  targets:
+    - deploy_kafka.deployment.values.zk.url
+    - deploy_pixy.deployment.values.zk.url
+- type: pipeline
+  dataType: number
+  label: Number of Zookeeper nodes
+  default: 3
+  min: 1
+  pattern: ^\d*[13579]$
+  required: false
+  order: 3
+  group: Zookeeper
+  showIf:
+    properties:
+      zkASetting:
+        const: true
+  targets:
+    - deploy_zk.deployment.values.cluster.size
 - type: pipeline
   dataType: boolean
   label: Kafka HQ enabled

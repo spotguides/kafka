@@ -13,18 +13,13 @@ pipeline:
       name: './zookeeper-0.0.1.tgz'
       releaseName: '{{ .CICD_REPO_NAME }}-zk'
       namespace: zookeeper
-  
-  package_kafka_operator:
-    image: lachlanevenson/k8s-helm:latest
-    commands:
-      - helm init -c
-      - helm package ./.banzaicloud/charts/kafka-operator
 
   deploy_kafka_operator:
     image: banzaicloud/ci-pipeline-client:0.11
     action: EnsureDeployment
     deployment:
-      name: './kafka-operator-0.2.0.tgz'
+      name: 'banzaicloud-stable/kafka-operator'
+      version: '0.0.4'
       releaseName: '{{ .CICD_REPO_NAME }}-kafka-operator'
       namespace: kafka
 
@@ -37,11 +32,11 @@ pipeline:
       namespace: kafka
       merge: true
       spec:
-  install_sasl_secrets:
+  install_jks_secrets:
     image: banzaicloud/ci-pipeline-client:0.11
     action: InstallSecret
     clusterSecret:
-      name: '{{ .CICD_REPO_NAME }}-sasl'
+      name: '{{ .CICD_REPO_NAME }}-jks'
       namespace: kafka
       merge: true
       spec:
@@ -87,6 +82,25 @@ pipeline:
         tlsSecretName: '{{ .CICD_REPO_NAME }}-ssl'
 {{{{- end}}}}
 {{{{- end}}}}
+
+{{{{- if .pipeline.deploy_pixy.deployment.values.banzaicloud.pixy.enabled }}}}
+
+  package_pixy:
+    image: lachlanevenson/k8s-helm:latest
+    commands:
+      - helm init -c
+      - helm package ./.banzaicloud/charts/kafka-pixy
+
+  deploy_pixy:
+    image: banzaicloud/ci-pipeline-client:0.11
+    action: EnsureDeployment
+    deployment:
+      name: './kafka-pixy-0.1.0.tgz'
+      releaseName: '{{ .CICD_REPO_NAME }}-pixy'
+      namespace: kafka
+
+{{{{- end}}}}
+
   package_kafka:
     image: lachlanevenson/k8s-helm:latest
     commands:
@@ -112,8 +126,5 @@ pipeline:
           ssl:
 {{{{- if (not (eq .pipeline.deploy_kafka.deployment.values.brokers.ssl.mechanism "None")) }}}}
             secretName: '{{ .CICD_REPO_NAME }}-ssl'
-{{{{- end}}}}
-          sasl:
-{{{{- if (not (eq .pipeline.deploy_kafka.deployment.values.brokers.ssl.mechanism "None")) }}}}
-            secretName: '{{ .CICD_REPO_NAME }}-sasl'
+            jksSecretName: '{{ .CICD_REPO_NAME }}-jks'
 {{{{- end}}}}

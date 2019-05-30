@@ -30,8 +30,7 @@ data:
         kafka-spotguide:
           properties:
             bootstrap.servers: "kafka-0.kafka-headless.kafka.svc.cluster.local:29092"
-            security.protocol: SASL_SSL
-            sasl.mechanism: SCRAM-SHA-256
+            security.protocol: SSL
             ssl.truststore.location: /etc/secret/keystore/client.truststore.jks
             ssl.truststore.password: genpass
             ssl.keystore.location: /etc/secret/keystore/client.keystore.jks
