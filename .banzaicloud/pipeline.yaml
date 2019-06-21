@@ -19,7 +19,7 @@ pipeline:
     action: EnsureDeployment
     deployment:
       name: 'banzaicloud-stable/kafka-operator'
-      version: '0.0.4'
+      version: '0.0.6'
       releaseName: '{{ .CICD_REPO_NAME }}-kafka-operator'
       namespace: kafka
 

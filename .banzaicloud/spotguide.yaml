@@ -20,6 +20,7 @@ questions:
   group: Kafka
   options:
     - 2.12-2.1.0
+    - 2.12-2.1.1
   targets:
     - deploy_kafka.deployment.values.image.tag
 - type: pipeline
@@ -29,7 +30,7 @@ questions:
   order: 2
   group: Kafka
   required: true
-  min: 1
+  min: 3
   targets:
     - deploy_kafka.deployment.values.brokers.replicas
 - type: pipeline
@@ -112,6 +113,22 @@ questions:
           - External
   targets:
     - name: install_jks_secrets.clusterSecret.sourceSecretName
+- type: pipeline
+  dataType: boolean
+  order: 8
+  label: Schedule One broker per node
+  default: true
+  group: Kafka
+  targets:
+    - deploy_kafka.deployment.values.brokers.oneBrokerPerNode
+- type: pipeline
+  dataType: boolean
+  order: 9
+  label: Rack Awareness Enabled
+  default: true
+  group: Kafka
+  targets:
+    - deploy_kafka.deployment.values.brokers.rackAwareness
 - type: pipeline
   dataType: boolean
   label: Schema Registry enabled
