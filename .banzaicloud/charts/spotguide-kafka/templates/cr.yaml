@@ -11,6 +11,12 @@ metadata:
 spec:
   zkAddresses:
     - "{{.Values.zk.url}}"
+  oneBrokerPerNode: {{.Values.brokers.oneBrokerPerNode}}
+{{- if .Values.brokers.rackAwareness }}
+  rackAwareness:
+    labels:
+      - "failure-domain.beta.kubernetes.io/zone"
+{{- end }}
   brokerConfigs:
   {{$brokerIds := repeat (int .Values.brokers.replicas) "_" | split "_"}}
   {{range $i,$v := $brokerIds}}
