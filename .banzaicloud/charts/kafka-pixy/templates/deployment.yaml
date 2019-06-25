@@ -26,7 +26,7 @@ spec:
           command:
             - kafka-pixy
             - -kafkaPeers
-            - "{{ .Values.kafka.address }}.{{ .Release.Name }}:29092"
+            - "{{ .Values.kafka.address }}.{{ .Release.Namespace }}:29092"
             - -zookeeperPeers
             - {{ .Values.zk.url }}
             - -tcpAddr
