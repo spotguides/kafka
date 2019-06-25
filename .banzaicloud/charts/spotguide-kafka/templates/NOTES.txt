@@ -240,7 +240,9 @@ The UI is accessable from here:
 {{- end }}
 
 {{- if .Values.banzaicloud.pixy.enabled }}
+
 ### Kafka RestProxy
+
 Kafka-Pixy is a dual API (gRPC and REST) proxy for Kafka with automatic consumer group control.
 
 It is available only inside the cluster on `rest-proxy-svc.kafka:80`
