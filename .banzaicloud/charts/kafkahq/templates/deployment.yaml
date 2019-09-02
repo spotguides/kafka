@@ -43,7 +43,7 @@ spec:
             mountPath: /etc/secret/keystore
         - name: wait-kafka-to-start
           image: "solsson/kafka-initutils@sha256:c98d7fb5e9365eab391a5dcd4230fc6e72caf929c60f29ff091e3b0215124713"
-          command: [ "/bin/bash", "-c", "until kubectl get pods -n kafka kafka-0 -o jsonpath='{.status.phase}' | grep -q Running; do echo waiting for kafka ; sleep 3 ; done ;"]
+          command: [ "/bin/bash", "-c", "until kubectl get pods -n kafka --selector=brokerId=0 -o jsonpath='{.items[0].status.phase}' | grep -q Running; do echo waiting for kafka ; sleep 3 ; done ;"]
         - name: jaasgen
           image: "solsson/kafka-initutils@sha256:c98d7fb5e9365eab391a5dcd4230fc6e72caf929c60f29ff091e3b0215124713"
           command:
