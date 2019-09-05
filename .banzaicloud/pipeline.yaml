@@ -76,7 +76,7 @@ pipeline:
             traefik.ingress.kubernetes.io/auth-secret: '{{ .CICD_REPO_NAME }}-kafkahq'
             ingress.kubernetes.io/ssl-redirect: 'true'
           hosts:
-            - 'kafkahq-{{ (printf "%s-%s" .CICD_REPO_NAME .CLUSTER_NAME) | sha1sum | trunc 10}}.{{.ORG_NAME}}.{{.DOMAIN_NAME}}'
+            - '{{ lower (printf "kafkahq-%s-%s.%s.%s" .CICD_REPO_NAME (.CLUSTER_NAME | sha1sum | trunc 10) .ORG_NAME .DOMAIN_NAME) }}'
 
 {{{{- if or (eq (.pipeline.deploy_kafka.deployment.values.brokers.ssl.mechanism) "Internal") (eq (.pipeline.deploy_kafka.deployment.values.brokers.ssl.mechanism) "Internal/External") }}}}
         tlsSecretName: '{{ .CICD_REPO_NAME }}-ssl'
@@ -120,7 +120,7 @@ pipeline:
           kafkahq:
             ingress:
               hosts:
-                 - 'kafkahq-{{ (printf "%s-%s" .CICD_REPO_NAME .CLUSTER_NAME) | sha1sum | trunc 10}}.{{.ORG_NAME}}.{{.DOMAIN_NAME}}'
+                 - '{{ lower (printf "kafkahq-%s-%s.%s.%s" .CICD_REPO_NAME (.CLUSTER_NAME | sha1sum | trunc 10) .ORG_NAME .DOMAIN_NAME) }}'
 {{{{- end }}}}
         brokers:
           ssl:
