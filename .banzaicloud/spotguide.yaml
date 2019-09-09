@@ -82,7 +82,7 @@ questions:
     input: false
     hosts: true
   default:
-    hosts: "*.kafka-headless.kafka.svc.cluster.local"
+    hosts: "*.kafka-headless.kafka.svc.cluster.local,kafka-headless"
   label: SSL keys
   group: Kafka
   showIf:
