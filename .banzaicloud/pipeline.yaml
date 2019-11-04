@@ -14,12 +14,26 @@ pipeline:
       releaseName: '{{ .CICD_REPO_NAME }}-zk'
       namespace: zookeeper
 
+  package_cert_manager:
+    image: lachlanevenson/k8s-helm:latest
+    commands:
+      - helm init -c
+      - helm package ./.banzaicloud/charts/certmanager
+
+  deploy_cert_manager:
+    image: banzaicloud/ci-pipeline-client:0.11
+    action: EnsureDeployment
+    deployment:
+      name: './certmanagercrds-0.1.0.tgz'
+      releaseName: '{{ .CICD_REPO_NAME }}-certmanager'
+      namespace: cert-manager
+
   deploy_kafka_operator:
     image: banzaicloud/ci-pipeline-client:0.11
     action: EnsureDeployment
     deployment:
       name: 'banzaicloud-stable/kafka-operator'
-      version: '0.0.7'
+      version: '0.2.4'
       releaseName: '{{ .CICD_REPO_NAME }}-kafka-operator'
       namespace: kafka
 

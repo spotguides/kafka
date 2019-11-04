@@ -9,6 +9,14 @@ metadata:
     heritage: "{{ .Release.Service }}"
   name: kafka
 spec:
+  rollingUpgradeConfig:
+    failureThreshold: 1
+  clusterWideConfig: |
+    "{{.Values.brokers.clusterwideconfig | nindent 4}}"
+  readOnlyConfig: |
+    "{{.Values.brokers.readonlyconfig | nindent 4}}"
+  headlessServiceEnabled: true
+  clusterImage: "{{.Values.image.repository}}:{{.Values.image.tag}}"
   zkAddresses:
     - "{{.Values.zk.url}}"
   oneBrokerPerNode: {{.Values.brokers.oneBrokerPerNode}}
@@ -16,22 +24,23 @@ spec:
   rackAwareness:
     labels:
       - "failure-domain.beta.kubernetes.io/zone"
+      - "failure-domain.beta.kubernetes.io/region"
 {{- end }}
-  brokerConfigs:
+  brokers:
   {{$brokerIds := repeat (int .Values.brokers.replicas) "_" | split "_"}}
   {{range $i,$v := $brokerIds}}
-    - image: "{{$.Values.image.repository}}:{{$.Values.image.tag}}"
-      id: {{trimPrefix "_" $i}}
-      config: |
-        {{- $.Values.brokers.config | nindent 8}}
-      storageConfigs:
-        - mountPath: "/kafka-logs"
-          pvcSpec:
-            accessModes:
-              - ReadWriteOnce
-            resources:
-              requests:
-                storage: "{{$.Values.brokers.disk.size}}"
+    - id: {{trimPrefix "_" $i}}
+      brokerConfig:
+        config: |
+          {{- $.Values.brokers.config | nindent 10}}
+        storageConfigs:
+          - mountPath: "/kafka-logs"
+            pvcSpec:
+              accessModes:
+                - ReadWriteOnce
+              resources:
+                requests:
+                  storage: "{{$.Values.brokers.disk.size}}"
   {{- end}}
   listenersConfig:
 {{- if or (eq (.Values.brokers.ssl.mechanism) "External") (eq (.Values.brokers.ssl.mechanism) "Internal/External") }}
@@ -50,22 +59,32 @@ spec:
 {{- if or (eq (.Values.brokers.ssl.mechanism) "Internal") (eq (.Values.brokers.ssl.mechanism) "Internal/External") }}
     internalListeners:
       - type: "ssl"
-        name: "ssl"
+        name: "internal"
         containerPort: 29092
         usedForInnerBrokerCommunication: true
+      - type: "ssl"
+        name: "controller"
+        containerPort: 29093
+        usedForInnerBrokerCommunication: false
+        usedForControllerCommunication: true
 {{- else }}
     internalListeners:
       - type: "plaintext"
-        name: "plaintext"
+        name: "internal"
         containerPort: 29092
         usedForInnerBrokerCommunication: true
+      - type: "plaintext"
+        name: "controller"
+        containerPort: 29093
+        usedForInnerBrokerCommunication: false
+        usedForControllerCommunication: true
 {{- end }}
 {{- if or (eq (.Values.brokers.ssl.mechanism) "External") (eq (.Values.brokers.ssl.mechanism) "Internal/External") (eq (.Values.brokers.ssl.mechanism) "Internal")}}
     sslSecrets:
       tlsSecretName: "{{.Values.brokers.ssl.secretName}}"
       jksPasswordName: "{{.Values.brokers.ssl.jksSecretName}}"
+      create: false
 {{- end }}
-  serviceAccount: ""
   cruiseControlConfig:
     # Config describes the main configuration file called cruisecontrol.properties bootsrap.server and zookeeper.connect must left out
     # because those values are generated

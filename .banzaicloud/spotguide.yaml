@@ -3,7 +3,7 @@ description: 'Production grade Kafka on Kubernets'
 tags: ['Kafka', 'Big Data', 'Zookeeper', 'Queue']
 resources:
   sumCpu: 8
-  sumMem: 12
+  sumMem: 18
   filters: []
   sameSize: false
   onDemandPct: 25
@@ -19,8 +19,8 @@ questions:
   order: 1
   group: Kafka
   options:
-    - 2.12-2.1.0
-    - 2.12-2.1.1
+    - 2.12-2.2.0
+    - 2.12-2.3.0
   targets:
     - deploy_kafka.deployment.values.image.tag
 - type: pipeline
@@ -48,20 +48,47 @@ questions:
   controlType: code
   config:
     mode: properties
-  label: Broker properties
+  label: Read only broker config
   group: Kafka
   order: 4
   required: false
-  description: Any Kafka Broker config can be set here except zookeeper.connect, log.dirs, broker.id, all sasl. and ssl. related ones. These settings are taken care of by the Spotguide.
+  description: Any Kafka read-only broker config can be set here except zookeeper.connect, log.dirs, broker.id, all sasl. and ssl. related ones. These settings are taken care of by the Spotguide.
   default: |
-    default.replication.factor=3
-    num.partitions=3
+    auto.create.topics.enable=false
+  targets:
+    - deploy_kafka.deployment.values.brokers.readonlyconfig
+- type: pipeline
+  dataType: string
+  controlType: code
+  config:
+    mode: properties
+  label: Cluster wide broker config
+  group: Kafka
+  order: 5
+  required: false
+  description: Any Kafka clusterwide broker config can be set here.
+  default: |
+    min.insync.replicas=1
+  targets:
+    - deploy_kafka.deployment.values.brokers.clusterwide
+- type: pipeline
+  dataType: string
+  controlType: code
+  config:
+    mode: properties
+  label: Broker per broker config
+  group: Kafka
+  order: 6
+  required: false
+  description: Any Kafka per broker broker config can be set here.
+  default: |
+    sasl.enabled.mechanisms=GSSAPI
   targets:
     - deploy_kafka.deployment.values.brokers.config
 - type: pipeline
   dataType: enum
   key: ssl
-  order: 5
+  order: 7
   label: Encryption
   default: Internal/External
   required: true
@@ -77,7 +104,7 @@ questions:
   name: sslkeys
   description: Only the host and the name field is required during generating the ssl secret. ssl.endpoint.identification.algorithm=https is enabled by default so generate your certificate accordingly.
   dataType: tls
-  order: 6
+  order: 8
   required:
     input: false
     hosts: true
@@ -98,7 +125,7 @@ questions:
 - type: secret
   name: jks
   dataType: password
-  order: 7
+  order: 9
   label: Jks password
   group: Kafka
   default:
@@ -115,7 +142,7 @@ questions:
     - name: install_jks_secrets.clusterSecret.sourceSecretName
 - type: pipeline
   dataType: boolean
-  order: 8
+  order: 10
   label: Schedule One broker per node
   default: true
   group: Kafka
@@ -123,7 +150,7 @@ questions:
     - deploy_kafka.deployment.values.brokers.oneBrokerPerNode
 - type: pipeline
   dataType: boolean
-  order: 9
+  order: 11
   label: Rack Awareness Enabled
   default: true
   group: Kafka

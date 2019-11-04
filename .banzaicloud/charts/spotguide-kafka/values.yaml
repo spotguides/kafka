@@ -16,4 +16,4 @@ zk:
 
 image:
   repository: wurstmeister/kafka
-  tag: 2.12-2.1.0
+  tag: 2.12-2.3.0
