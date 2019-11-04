@@ -14,7 +14,7 @@ questions:
   dataType: enum
   key: kafka_version_enum
   label: Version
-  default: 2.12-2.1.0
+  default: 2.12-2.3.0
   required: true
   order: 1
   group: Kafka
@@ -70,7 +70,7 @@ questions:
   default: |
     min.insync.replicas=1
   targets:
-    - deploy_kafka.deployment.values.brokers.clusterwide
+    - deploy_kafka.deployment.values.brokers.clusterwideconfig
 - type: pipeline
   dataType: string
   controlType: code
@@ -90,7 +90,7 @@ questions:
   key: ssl
   order: 7
   label: Encryption
-  default: Internal/External
+  default: None
   required: true
   options:
     - Internal/External
