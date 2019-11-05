@@ -7515,6 +7515,8 @@ metadata:
     app.kubernetes.io/managed-by: Tiller
     helm.sh/chart: cainjector-v0.10.1
 
+---
+
 # Source: cert-manager/charts/cainjector/templates/rbac.yaml
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRole
