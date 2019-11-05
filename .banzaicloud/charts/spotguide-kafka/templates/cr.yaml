@@ -11,8 +11,6 @@ metadata:
 spec:
   rollingUpgradeConfig:
     failureThreshold: 1
-  clusterWideConfig: |
-    "{{.Values.brokers.clusterwideconfig | nindent 4}}"
   readOnlyConfig: |
     "{{.Values.brokers.readonlyconfig | nindent 4}}"
   headlessServiceEnabled: true
@@ -27,12 +25,10 @@ spec:
       - "failure-domain.beta.kubernetes.io/region"
 {{- end }}
   brokers:
-  {{$brokerIds := repeat (sub (int .Values.brokers.replicas)) "_" | split "_"}}
+  {{$brokerIds := repeat (int (sub (int .Values.brokers.replicas) 1)) "_" | split "_"}}
   {{range $i,$v := $brokerIds}}
     - id: {{trimPrefix "_" $i}}
       brokerConfig:
-        config: |
-          {{- $.Values.brokers.config | nindent 10}}
         storageConfigs:
           - mountPath: "/kafka-logs"
             pvcSpec:

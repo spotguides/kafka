@@ -58,34 +58,6 @@ questions:
   targets:
     - deploy_kafka.deployment.values.brokers.readonlyconfig
 - type: pipeline
-  dataType: string
-  controlType: code
-  config:
-    mode: properties
-  label: Cluster wide broker config
-  group: Kafka
-  order: 5
-  required: false
-  description: Any Kafka clusterwide broker config can be set here.
-  default: |
-    min.insync.replicas=1
-  targets:
-    - deploy_kafka.deployment.values.brokers.clusterwideconfig
-- type: pipeline
-  dataType: string
-  controlType: code
-  config:
-    mode: properties
-  label: Broker per broker config
-  group: Kafka
-  order: 6
-  required: false
-  description: Any Kafka per broker broker config can be set here.
-  default: |
-    sasl.enabled.mechanisms=GSSAPI
-  targets:
-    - deploy_kafka.deployment.values.brokers.config
-- type: pipeline
   dataType: enum
   key: ssl
   order: 7
@@ -144,7 +116,7 @@ questions:
   dataType: boolean
   order: 10
   label: Schedule One broker per node
-  default: true
+  default: false
   group: Kafka
   targets:
     - deploy_kafka.deployment.values.brokers.oneBrokerPerNode
@@ -152,14 +124,14 @@ questions:
   dataType: boolean
   order: 11
   label: Rack Awareness Enabled
-  default: true
+  default: false
   group: Kafka
   targets:
     - deploy_kafka.deployment.values.brokers.rackAwareness
 - type: pipeline
   dataType: boolean
   label: Schema Registry enabled
-  default: true
+  default: false
   description: By enabling true, does not installs the Schema Registry. It just gives a thorough guide how to install it.
   group: Schema Registry
   showIf:
@@ -180,7 +152,7 @@ questions:
 - type: pipeline
   dataType: boolean
   label: Rest Proxy enabled
-  default: true
+  default: false
   group: Rest Proxy
   showIf:
     properties:
@@ -224,7 +196,7 @@ questions:
   dataType: boolean
   label: Kafka HQ enabled
   key: kafkahq
-  default: true
+  default: false
   group: Kafkahq
   targets:
     - deploy_kafkahq.deployment.values.banzaicloud.ui.enabled
