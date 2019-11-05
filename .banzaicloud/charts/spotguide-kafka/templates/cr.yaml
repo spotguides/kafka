@@ -27,7 +27,7 @@ spec:
       - "failure-domain.beta.kubernetes.io/region"
 {{- end }}
   brokers:
-  {{$brokerIds := repeat (int .Values.brokers.replicas) "_" | split "_"}}
+  {{$brokerIds := repeat (sub (int .Values.brokers.replicas)) "_" | split "_"}}
   {{range $i,$v := $brokerIds}}
     - id: {{trimPrefix "_" $i}}
       brokerConfig:
