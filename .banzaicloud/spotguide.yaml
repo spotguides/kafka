@@ -60,7 +60,7 @@ questions:
 - type: pipeline
   dataType: enum
   key: ssl
-  order: 7
+  order: 5
   label: Encryption
   default: None
   required: true
@@ -76,7 +76,7 @@ questions:
   name: sslkeys
   description: Only the host and the name field is required during generating the ssl secret. ssl.endpoint.identification.algorithm=https is enabled by default so generate your certificate accordingly.
   dataType: tls
-  order: 8
+  order: 6
   required:
     input: false
     hosts: true
@@ -97,7 +97,7 @@ questions:
 - type: secret
   name: jks
   dataType: password
-  order: 9
+  order: 7
   label: Jks password
   group: Kafka
   default:
@@ -114,7 +114,7 @@ questions:
     - name: install_jks_secrets.clusterSecret.sourceSecretName
 - type: pipeline
   dataType: boolean
-  order: 10
+  order: 8
   label: Schedule One broker per node
   default: false
   group: Kafka
@@ -122,7 +122,7 @@ questions:
     - deploy_kafka.deployment.values.brokers.oneBrokerPerNode
 - type: pipeline
   dataType: boolean
-  order: 11
+  order: 9
   label: Rack Awareness Enabled
   default: false
   group: Kafka
