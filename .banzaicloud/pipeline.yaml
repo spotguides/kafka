@@ -7,7 +7,7 @@ pipeline:
       - helm package ./.banzaicloud/charts/zookeeper
 
   deploy_zk:
-    image: banzaicloud/ci-pipeline-client:0.11
+    image: banzaicloud/ci-pipeline-client:0.12
     action: EnsureDeployment
     deployment:
       name: './zookeeper-0.0.1.tgz'
@@ -21,7 +21,7 @@ pipeline:
       - helm package ./.banzaicloud/charts/certmanager
 
   deploy_cert_manager:
-    image: banzaicloud/ci-pipeline-client:0.11
+    image: banzaicloud/ci-pipeline-client:0.12
     action: EnsureDeployment
     deployment:
       name: './certmanager-0.1.0.tgz'
@@ -29,7 +29,7 @@ pipeline:
       namespace: cert-manager
 
   deploy_kafka_operator:
-    image: banzaicloud/ci-pipeline-client:0.11
+    image: banzaicloud/ci-pipeline-client:0.12
     action: EnsureDeployment
     deployment:
       name: 'banzaicloud-stable/kafka-operator'
@@ -39,7 +39,7 @@ pipeline:
 
 {{{{- if (not (eq .pipeline.deploy_kafka.deployment.values.brokers.ssl.mechanism "None")) }}}}
   install_ssl_secrets:
-    image: banzaicloud/ci-pipeline-client:0.11
+    image: banzaicloud/ci-pipeline-client:0.12
     action: InstallSecret
     clusterSecret:
       name: '{{ .CICD_REPO_NAME }}-ssl'
@@ -47,7 +47,7 @@ pipeline:
       merge: true
       spec:
   install_jks_secrets:
-    image: banzaicloud/ci-pipeline-client:0.11
+    image: banzaicloud/ci-pipeline-client:0.12
     action: InstallSecret
     clusterSecret:
       name: '{{ .CICD_REPO_NAME }}-jks'
@@ -57,7 +57,7 @@ pipeline:
 {{{{- end}}}}
 {{{{- if .pipeline.deploy_kafkahq.deployment.values.banzaicloud.ui.enabled }}}}
   install_kafkahq_auth_secrets:
-    image: banzaicloud/ci-pipeline-client:0.11
+    image: banzaicloud/ci-pipeline-client:0.12
     action: InstallSecret
     clusterSecret:
       name: '{{ .CICD_REPO_NAME }}-kafkahq'
@@ -74,7 +74,7 @@ pipeline:
         - helm package ./.banzaicloud/charts/kafkahq
 
   deploy_kafkahq:
-    image: banzaicloud/ci-pipeline-client:0.11
+    image: banzaicloud/ci-pipeline-client:0.12
     action: EnsureDeployment
     deployment:
       name: './kafkahq-0.1.0.tgz'
@@ -106,7 +106,7 @@ pipeline:
       - helm package ./.banzaicloud/charts/kafka-pixy
 
   deploy_pixy:
-    image: banzaicloud/ci-pipeline-client:0.11
+    image: banzaicloud/ci-pipeline-client:0.12
     action: EnsureDeployment
     deployment:
       name: './kafka-pixy-0.1.0.tgz'
@@ -122,7 +122,7 @@ pipeline:
       - helm package ./.banzaicloud/charts/spotguide-kafka
 
   deploy_kafka:
-    image: banzaicloud/ci-pipeline-client:0.11
+    image: banzaicloud/ci-pipeline-client:0.12
     action: EnsureDeployment
     deployment:
       name: './spotguide-kafka-1.0.1.tgz'
