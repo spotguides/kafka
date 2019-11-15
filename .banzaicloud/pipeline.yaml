@@ -1,7 +1,7 @@
 pipeline:
 
   package_zookeeper:
-    image: lachlanevenson/k8s-helm:latest
+    image: lachlanevenson/k8s-helm:v2.16.1
     commands:
       - helm init -c
       - helm package ./.banzaicloud/charts/zookeeper
@@ -15,7 +15,7 @@ pipeline:
       namespace: zookeeper
 
   package_cert_manager:
-    image: lachlanevenson/k8s-helm:latest
+    image: lachlanevenson/k8s-helm:v2.16.1
     commands:
       - helm init -c
       - helm package ./.banzaicloud/charts/certmanager
@@ -68,7 +68,7 @@ pipeline:
           source: htpasswd
 
   package_kafkahq:
-    image: lachlanevenson/k8s-helm:latest
+    image: lachlanevenson/k8s-helm:v2.16.1
     commands:
         - helm init -c
         - helm package ./.banzaicloud/charts/kafkahq
@@ -100,7 +100,7 @@ pipeline:
 {{{{- if .pipeline.deploy_pixy.deployment.values.banzaicloud.pixy.enabled }}}}
 
   package_pixy:
-    image: lachlanevenson/k8s-helm:latest
+    image: lachlanevenson/k8s-helm:v2.16.1
     commands:
       - helm init -c
       - helm package ./.banzaicloud/charts/kafka-pixy
@@ -116,7 +116,7 @@ pipeline:
 {{{{- end}}}}
 
   package_kafka:
-    image: lachlanevenson/k8s-helm:latest
+    image: lachlanevenson/k8s-helm:v2.16.1
     commands:
       - helm init -c
       - helm package ./.banzaicloud/charts/spotguide-kafka
